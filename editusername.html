@@ -3,106 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Set Username</title>
+    <title>Edit Username</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            padding: 20px;
         }
+
         .container {
+            max-width: 600px;
+            margin: auto;
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        .container h2 {
+
+        h1 {
+            text-align: center;
             margin-bottom: 20px;
         }
-        .input-group {
-            margin-bottom: 15px;
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 8px;
+
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            margin-bottom: 20px;
         }
-        .button-group {
-            display: flex;
-            justify-content: space-between;
-        }
-        .button-group button {
-            padding: 10px 20px;
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
         }
-        .button-group button.save {
-            background-color: #4CAF50;
-            color: white;
+
+        button:hover {
+            background-color: #0056b3;
         }
-        .button-group button.cancel {
-            background-color: #f44336;
-            color: white;
-        }
-        .hidden {
-            display: none;
-        }
+
         .username-list {
             margin-top: 20px;
         }
-        .username-list h3 {
-            margin-bottom: 10px;
-        }
-        .username-list ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        .username-list li {
-            background-color: #eee;
-            margin-bottom: 5px;
+
+        .username-item {
             padding: 10px;
-            border-radius: 4px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .timestamp {
+            color: #888;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Set Username</h2>
-        <div class="input-group">
-            <label for="username">Username:</label>
-            <input type="text" id="username" value="@" required>
-        </div>
-        <div class="button-group">
-            <button class="save hidden" onclick="saveUsername()">Save</button>
-            <button class="cancel hidden" onclick="cancelUsername()">Cancel</button>
-        </div>
-        <p id="message"></p>
-        <div class="username-list">
-            <h3>My Usernames</h3>
-            <ul id="usernameList"></ul>
+        <h1>Edit Username</h1>
+        <input type="text" id="usernameInput" placeholder="Enter your username">
+        <button id="saveButton" style="display:none;">Save</button>
+        <button id="cancelButton" style="display:none;">Cancel</button>
+
+        <div class="username-list" id="usernameList">
+            <!-- Usernames will be dynamically inserted here -->
         </div>
     </div>
 
-    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
-    <!-- Add Firebase products that you want to use -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js"></script>
-
+    <!-- Firebase JavaScript SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
-       const firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyBcTEVvxXmv5N8dJav4xNDRy5hXZRjVeM4",
             authDomain: "chatflow-59776.firebaseapp.com",
             databaseURL: "https://chatflow-59776-default-rtdb.firebaseio.com",
@@ -112,106 +94,105 @@
             appId: "1:549003131640:web:3f4a7b8cef4c0d8a2b990d",
             measurementId: "G-V2180PR5CR"
         };
-        
+
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-        let userEmail = '';
+        const usernameInput = document.getElementById('usernameInput');
+        const saveButton = document.getElementById('saveButton');
+        const cancelButton = document.getElementById('cancelButton');
+        const usernameList = document.getElementById('usernameList');
 
-        // Check user authentication
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                userEmail = user.email;
-                fetchUsernames();
-            } else {
-                // No user is signed in, redirect to login page
-                window.location.href = 'index.html';
-            }
-        });
+        // Function to fetch and display usernames for current user
+        function fetchUsernames() {
+            const currentUserEmail = firebase.auth().currentUser.email;
+            const databaseRef = database.ref('usernameSet');
+            const query = databaseRef.orderByChild('email').equalTo(currentUserEmail);
 
-        document.getElementById('username').addEventListener('input', function() {
-            const saveButton = document.querySelector('.save');
-            const cancelButton = document.querySelector('.cancel');
-            const username = this.value.trim();
-            if (username) {
-                saveButton.classList.remove('hidden');
-                cancelButton.classList.remove('hidden');
-            } else {
-                saveButton.classList.add('hidden');
-                cancelButton.classList.add('hidden');
-            }
-        });
+            query.on('value', (snapshot) => {
+                usernameList.innerHTML = '';
+                snapshot.forEach((childSnapshot) => {
+                    const usernameEntry = childSnapshot.val();
+                    const usernameItem = document.createElement('div');
+                    usernameItem.className = 'username-item';
+                    usernameItem.innerHTML = `
+                        <span>${usernameEntry.username}</span>
+                        <span class="timestamp">${new Date(usernameEntry.timestamp).toLocaleString()}</span>
+                    `;
+                    usernameList.appendChild(usernameItem);
+                });
+            });
+        }
 
+        // Function to save username to Firebase
         function saveUsername() {
-            const username = document.getElementById('username').value.trim();
-            if (!username) {
-                showMessage('Please enter your username', true);
+            const username = usernameInput.value.trim();
+
+            if (username === '') {
+                alert('Please enter your username');
                 return;
             }
+
+            // Check if the username already exists
             checkUsernameExists(username);
         }
 
-        function cancelUsername() {
-            // Clear the input field and hide the buttons
-            document.getElementById('username').value = '@';
-            const saveButton = document.querySelector('.save');
-            const cancelButton = document.querySelector('.cancel');
-            saveButton.classList.add('hidden');
-            cancelButton.classList.add('hidden');
-            showMessage('');
-        }
-
+        // Function to check if username already exists in Firebase
         function checkUsernameExists(username) {
-            const databaseReference = firebase.database().ref('usernameSet');
-            databaseReference.orderByChild('username').equalTo(username).once('value', (snapshot) => {
+            const databaseRef = database.ref('usernameSet');
+
+            databaseRef.orderByChild('username').equalTo(username).once('value', (snapshot) => {
                 if (snapshot.exists()) {
-                    showMessage('Username already exists', true);
+                    alert('Username already exists');
                 } else {
-                    saveUsernameToDatabase(username);
+                    // Save username to database
+                    const currentUserEmail = firebase.auth().currentUser.email;
+                    const timestamp = Date.now();
+
+                    const userData = {
+                        email: currentUserEmail,
+                        username: username,
+                        timestamp: timestamp
+                    };
+
+                    databaseRef.push(userData)
+                        .then(() => {
+                            alert('Username saved successfully');
+                            fetchUsernames(); // Refresh username list
+                            usernameInput.value = ''; // Clear input
+                        })
+                        .catch((error) => {
+                            console.error('Failed to save username: ', error);
+                            alert('Failed to save username');
+                        });
                 }
-            }).catch((error) => {
-                showMessage('Failed to check username', true);
             });
         }
 
-        function saveUsernameToDatabase(username) {
-            const timestamp = Date.now();
-            const databaseReference = firebase.database().ref('usernameSet');
-            const userData = {
-                email: userEmail,
-                username: username,
-                timestamp: timestamp
-            };
+        // Event listeners
+        usernameInput.addEventListener('input', () => {
+            saveButton.style.display = usernameInput.value.trim() !== '' ? 'block' : 'none';
+            cancelButton.style.display = usernameInput.value.trim() !== '' ? 'block' : 'none';
+        });
 
-            databaseReference.push(userData).then(() => {
-                showMessage('Username saved successfully');
-                fetchUsernames(); // Refresh the username list
-            }).catch(() => {
-                showMessage('Failed to save username', true);
-            });
-        }
+        saveButton.addEventListener('click', saveUsername);
 
-        function fetchUsernames() {
-            const databaseReference = firebase.database().ref('usernameSet');
-            databaseReference.orderByChild('email').equalTo(userEmail).once('value', (snapshot) => {
-                const usernameList = document.getElementById('usernameList');
-                usernameList.innerHTML = ''; // Clear the list
-                snapshot.forEach((childSnapshot) => {
-                    const data = childSnapshot.val();
-                    const li = document.createElement('li');
-                    li.textContent = `Username: ${data.username}, Timestamp: ${new Date(data.timestamp).toLocaleString()}`;
-                    usernameList.appendChild(li);
-                });
-            }).catch((error) => {
-                showMessage('Failed to fetch usernames', true);
-            });
-        }
+        cancelButton.addEventListener('click', () => {
+    usernameInput.value = ''; // Clear the input field
+    saveButton.style.display = 'none'; // Hide save button
+    cancelButton.style.display = 'none'; // Hide cancel button
+});
 
-        function showMessage(message, isError = false) {
-            const messageElem = document.getElementById('message');
-            messageElem.textContent = message;
-            messageElem.style.color = isError ? 'red' : 'green';
-        }
+
+        // Ensure user is authenticated before allowing operations
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                fetchUsernames();
+            } else {
+                window.location.href = 'index.html'; // Redirect to login if not authenticated
+            }
+        });
     </script>
 </body>
 </html>
