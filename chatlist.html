@@ -288,6 +288,27 @@
             }
         });
 
+function fetchChatPartnerName(email, callback) {
+    const namesRef = database.ref('names');
+    namesRef.orderByChild('email').equalTo(email).once('value', (snapshot) => {
+        let lastTimestamp = 0;
+        let userName = null;
+
+        snapshot.forEach((childSnapshot) => {
+            const timestamp = childSnapshot.child('timestamp').val();
+            const name = childSnapshot.child('name').val();
+
+            if (timestamp !== null && timestamp > lastTimestamp && name) {
+                lastTimestamp = timestamp;
+                userName = name;
+            }
+        });
+
+        callback(userName || email); // Use the name or fallback to email
+    });
+}
+
+// Usage within loadChatItems function
 function loadChatItems() {
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -348,33 +369,37 @@ function loadChatItems() {
                 const messageContainer = document.createElement('div');
                 messageContainer.className = 'message-container';
 
-                // Create and add the chat partner email element
-                const emailDiv = document.createElement('div');
-                emailDiv.className = 'chat-email';
-                emailDiv.innerText = chatPartner;
-                messageContainer.appendChild(emailDiv);
+                // Fetch and set the chat partner's name or email
+                fetchChatPartnerName(chatPartner, (nameOrEmail) => {
+                    // Create and add the chat partner email element
+                    const emailDiv = document.createElement('div');
+                    emailDiv.className = 'chat-email';
+                    emailDiv.innerText = nameOrEmail;
+                    messageContainer.appendChild(emailDiv);
 
-                // Create and add the message text element
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message';
-                messageDiv.innerText = truncatedMessage;
-                messageContainer.appendChild(messageDiv);
+                    // Create and add the message text element
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message';
+                    messageDiv.innerText = truncatedMessage;
+                    messageContainer.appendChild(messageDiv);
 
-                // Create and add the sent time element
-                const timeDiv = document.createElement('div');
-                timeDiv.className = 'sent-time';
-                timeDiv.innerText = new Date(timestamp).toLocaleString();
-                messageContainer.appendChild(timeDiv);
+                    // Create and add the sent time element
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'sent-time';
+                    timeDiv.innerText = new Date(timestamp).toLocaleString();
+                    messageContainer.appendChild(timeDiv);
 
-                // Append the message container to the chat item
-                chatItem.appendChild(messageContainer);
+                    // Append the message container to the chat item
+                    chatItem.appendChild(messageContainer);
 
-                // Append the chat item to the container
-                chatContainer.appendChild(chatItem);
+                    // Append the chat item to the container
+                    chatContainer.appendChild(chatItem);
+                });
             });
         }
     });
 }
+
 
 // Function to fetch the profile image URL for a given email
 function fetchProfileImage(email, callback) {
