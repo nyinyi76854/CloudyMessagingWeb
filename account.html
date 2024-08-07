@@ -4,42 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        #sidebar {
-            width: 200px;
+        #header {
+            width: 100%;
+            padding: 10px;
             position: fixed;
             top: 0;
             left: 0;
-            height: 100%;
             background-color: #333;
             color: #fff;
-            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
         }
 
-        #sidebar a {
-            display: block;
+        #backButton, #settingsButton {
             color: #fff;
-            padding: 10px;
-            text-decoration: none;
-        }
-
-        #sidebar a:hover {
-            background-color: #575757;
-        }
-
-        #main {
-            margin-left: 220px;
-            padding: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
         }
 
         #profile-section {
             text-align: center;
+            margin-top: 60px; /* To position below the header */
         }
 
         #profileImage {
@@ -50,33 +50,31 @@
             border: 2px solid #ddd;
         }
 
-        #info-section p {
-            margin: 10px 0;
+        #info-section {
+            margin-top: 20px;
+            text-align: center;
         }
 
-        #backButton {
-            margin-top: 20px;
+        #info-section p {
+            margin: 10px 0;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
-    <div id="sidebar">
-        <a href="profile.html" id="profileLink">Profile</a>
-        <a href="settings.html" id="settingsLink">Settings</a>
-        <a href="logout.html" id="logoutLink">Logout</a>
+    <div id="header">
+        <button id="backButton"><i class="fas fa-arrow-left"></i></button>
+        <button id="settingsButton"><i class="fas fa-cog"></i></button>
     </div>
-    <div id="main">
-        <div id="profile-section">
-            <img id="profileImage" src="default-profile.png" alt="Profile Photo">
-        </div>
-        <div id="info-section">
-            <p><strong>Email:</strong> <span id="emailText">Loading...</span></p>
-            <p><strong>Username:</strong> <span id="usernameText">Loading...</span></p>
-            <p><strong>Age:</strong> <span id="ageText">Loading...</span></p>
-            <p><strong>Region:</strong> <span id="regionText">Loading...</span></p>
-            <p><strong>Gender:</strong> <span id="genderText">Loading...</span></p>
-        </div>
-        <button id="backButton">Back</button>
+    <div id="profile-section">
+        <img id="profileImage" src="user_1077114.png" alt="Profile Photo">
+    </div>
+    <div id="info-section">
+        <p><strong>Email:</strong> <span id="emailText">Loading...</span></p>
+        <p><strong>Username:</strong> <span id="usernameText">Loading...</span></p>
+        <p><strong>Age:</strong> <span id="ageText">Loading...</span></p>
+        <p><strong>Region:</strong> <span id="regionText">Loading...</span></p>
+        <p><strong>Gender:</strong> <span id="genderText">Loading...</span></p>
     </div>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
@@ -126,55 +124,45 @@
                     if (latestPhotoUrl) {
                         profileImage.src = latestPhotoUrl;
                     } else {
-                        profileImage.src = 'default-profile.png'; // Default profile photo
+                        profileImage.src = 'user_1077114.png';
                     }
                 });
 
-                // Fetch and display the latest username
+                // Fetch and display latest username
                 const usernameRef = database.ref('usernameSet');
-                usernameRef.orderByChild('timestamp').limitToLast(1).once('value').then(snapshot => {
+                usernameRef.orderByChild('email').equalTo(email).limitToLast(1).once('value').then(snapshot => {
                     let latestUsername = 'No username found';
 
                     snapshot.forEach(childSnapshot => {
-                        const userEmail = childSnapshot.child('email').val();
                         const username = childSnapshot.child('username').val();
-
-                        if (userEmail === email) {
-                            latestUsername = username;
-                        }
+                        latestUsername = username || latestUsername;
                     });
 
                     document.getElementById("usernameText").textContent = latestUsername;
                 });
 
-                // Fetch and display the latest age
+                // Fetch and display latest age
                 const ageRef = database.ref('users');
-                ageRef.orderByChild('timestamp').limitToLast(1).once('value').then(snapshot => {
+                ageRef.orderByChild('email').equalTo(email).limitToLast(1).once('value').then(snapshot => {
                     let latestAge = 'Unknown';
 
                     snapshot.forEach(childSnapshot => {
-                        const userEmail = childSnapshot.child('email').val();
                         const age = childSnapshot.child('age').val();
-
-                        if (userEmail === email) {
-                            latestAge = age;
-                        }
+                        latestAge = age || latestAge;
                     });
 
                     document.getElementById("ageText").textContent = latestAge;
                 });
 
-                // Fetch and display the latest region
+                // Fetch and display latest region
                 const locationRef = database.ref('location');
-                locationRef.orderByChild('timestamp').limitToLast(1).once('value').then(snapshot => {
+                locationRef.orderByChild('email').equalTo(email).limitToLast(1).once('value').then(snapshot => {
                     let latestRegion = 'Region not found';
 
                     snapshot.forEach(childSnapshot => {
-                        const userEmail = childSnapshot.child('email').val();
                         const continent = childSnapshot.child('continent').val();
                         const country = childSnapshot.child('country').val();
-
-                        if (userEmail === email) {
+                        if (continent && country) {
                             latestRegion = `${continent}/${country}`;
                         }
                     });
@@ -182,26 +170,28 @@
                     document.getElementById("regionText").textContent = latestRegion;
                 });
 
-                // Fetch and display the latest gender
+                // Fetch and display latest gender
                 const genderRef = database.ref('gender');
-                genderRef.orderByChild('timestamp').limitToLast(1).once('value').then(snapshot => {
+                genderRef.orderByChild('email').equalTo(email).limitToLast(1).once('value').then(snapshot => {
                     let latestGender = 'Unknown';
 
                     snapshot.forEach(childSnapshot => {
-                        const userEmail = childSnapshot.child('email').val();
                         const gender = childSnapshot.child('gender').val();
-
-                        if (userEmail === email) {
-                            latestGender = gender;
-                        }
+                        latestGender = gender || latestGender;
                     });
 
                     document.getElementById("genderText").textContent = latestGender;
                 });
             }
 
+            // Set up the click listener for the back button
             document.getElementById("backButton").addEventListener("click", function() {
                 window.history.back();
+            });
+
+            // Set up the click listener for the settings button
+            document.getElementById("settingsButton").addEventListener("click", function() {
+                window.location.href = 'settings.html';
             });
         });
     </script>
