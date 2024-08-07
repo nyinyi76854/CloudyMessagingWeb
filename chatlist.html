@@ -287,14 +287,14 @@ function loadChatItems() {
             if (chatPartner) {
                 // Update the latest message if it's newer
                 if (!latestMessages[chatPartner] || latestMessages[chatPartner].timestamp < timestamp) {
-                    latestMessages[chatPartner] = { message, senderEmail, timestamp, chatPartner };
+                    latestMessages[chatPartner] = { message, chatPartner, timestamp };
                 }
             }
         });
 
         // Display the latest message for each chat partner
         for (const chatPartner in latestMessages) {
-            const { message, senderEmail, timestamp } = latestMessages[chatPartner];
+            const { message, chatPartner, timestamp } = latestMessages[chatPartner];
             const truncatedMessage = message.length > 26 ? message.substring(0, 26) + '...' : message;
 
             // Create a new chat item container
@@ -312,7 +312,7 @@ function loadChatItems() {
                 // Create and add the sender email element
                 const senderEmailDiv = document.createElement('div');
                 senderEmailDiv.className = 'sender-email';
-                senderEmailDiv.innerText = senderEmail;
+                senderEmailDiv.innerText = chatPartner; // Constant chat partner email
                 chatItem.appendChild(senderEmailDiv);
 
                 // Create and add the message text element
