@@ -275,14 +275,17 @@ function loadChatItems() {
             if (chatPartner) {
                 // Update the latest message if it's newer
                 if (!latestMessages[chatPartner] || latestMessages[chatPartner].timestamp < timestamp) {
-                    latestMessages[chatPartner] = { message, timestamp, chatPartner };
+                    latestMessages[chatPartner] = { message, timestamp, chatPartner, senderEmail };
                 }
             }
         });
 
         // Display the latest message for each chat partner
         for (const chatPartner in latestMessages) {
-            const { message } = latestMessages[chatPartner];
+            const { message, timestamp, senderEmail } = latestMessages[chatPartner];
+
+            // Truncate the message if it exceeds 26 characters
+            const truncatedMessage = message.length > 26 ? message.substring(0, 23) + '...' : message;
 
             // Create a new chat item container
             const chatItem = document.createElement('div');
@@ -296,11 +299,23 @@ function loadChatItems() {
                 profileImg.className = 'profile-img'; // Optional: Add a class for styling
                 chatItem.appendChild(profileImg);
 
+                // Create and add the sender email element
+                const senderEmailDiv = document.createElement('div');
+                senderEmailDiv.className = 'sender-email';
+                senderEmailDiv.innerText = senderEmail;
+                chatItem.appendChild(senderEmailDiv);
+
                 // Create and add the message text element
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'message';
-                messageDiv.innerText = message;
+                messageDiv.innerText = truncatedMessage;
                 chatItem.appendChild(messageDiv);
+
+                // Create and add the sent time element
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'sent-time';
+                timeDiv.innerText = new Date(timestamp).toLocaleString();
+                chatItem.appendChild(timeDiv);
 
                 // Append the chat item to the container
                 chatContainer.appendChild(chatItem);
