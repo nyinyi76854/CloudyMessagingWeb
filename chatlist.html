@@ -275,17 +275,15 @@ function loadChatItems() {
             if (chatPartner) {
                 // Update the latest message if it's newer
                 if (!latestMessages[chatPartner] || latestMessages[chatPartner].timestamp < timestamp) {
-                    latestMessages[chatPartner] = { message, timestamp, chatPartner, senderEmail };
+                    latestMessages[chatPartner] = { message, senderEmail, timestamp, chatPartner };
                 }
             }
         });
 
         // Display the latest message for each chat partner
         for (const chatPartner in latestMessages) {
-            const { message, timestamp, senderEmail } = latestMessages[chatPartner];
-
-            // Truncate the message if it exceeds 26 characters
-            const truncatedMessage = message.length > 26 ? message.substring(0, 23) + '...' : message;
+            const { message, senderEmail, timestamp } = latestMessages[chatPartner];
+            const truncatedMessage = message.length > 26 ? message.substring(0, 26) + '...' : message;
 
             // Create a new chat item container
             const chatItem = document.createElement('div');
@@ -345,6 +343,7 @@ function fetchProfileImage(email, callback) {
         callback(latestPhotoUrl); // Call the callback with the retrieved URL
     });
 }
+
 
         // Load user profile photo
         function loadUserProfilePhoto(currentUser) {
