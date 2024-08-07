@@ -1,4 +1,4 @@
-<script>
+
 const firebaseConfig = {
     apiKey: "AIzaSyBcTEVvxXmv5N8dJav4xNDRy5hXZRjVeM4",
     authDomain: "chatflow-59776.firebaseapp.com",
@@ -86,4 +86,3 @@ function fetchDataFromFirebase() {
         });
     });
 }
-</script>
