@@ -344,23 +344,30 @@ function loadChatItems() {
                 profileImg.className = 'profile-img'; // Optional: Add a class for styling
                 chatItem.appendChild(profileImg);
 
+                // Create a container for email, message, and time
+                const messageContainer = document.createElement('div');
+                messageContainer.className = 'message-container';
+
                 // Create and add the chat partner email element
                 const emailDiv = document.createElement('div');
                 emailDiv.className = 'chat-email';
                 emailDiv.innerText = chatPartner;
-                chatItem.appendChild(emailDiv);
+                messageContainer.appendChild(emailDiv);
 
                 // Create and add the message text element
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'message';
                 messageDiv.innerText = truncatedMessage;
-                chatItem.appendChild(messageDiv);
+                messageContainer.appendChild(messageDiv);
 
                 // Create and add the sent time element
                 const timeDiv = document.createElement('div');
                 timeDiv.className = 'sent-time';
                 timeDiv.innerText = new Date(timestamp).toLocaleString();
-                chatItem.appendChild(timeDiv);
+                messageContainer.appendChild(timeDiv);
+
+                // Append the message container to the chat item
+                chatItem.appendChild(messageContainer);
 
                 // Append the chat item to the container
                 chatContainer.appendChild(chatItem);
@@ -390,6 +397,7 @@ function fetchProfileImage(email, callback) {
         callback(latestPhotoUrl); // Call the callback with the retrieved URL
     });
 }
+
 
         // Load user profile photo
         function loadUserProfilePhoto(currentUser) {
