@@ -48,12 +48,6 @@
             max-width: 600px;
             margin: auto;
         }
-        .user-info {
-            margin-bottom: 20px;
-            padding: 10px;
-            background: #e9ecef;
-            border-radius: 4px;
-        }
         .logout-button {
             position: fixed;
             bottom: 20px;
@@ -78,9 +72,6 @@
     </div>
 
     <div class="container">
-        <div class="user-info">
-            <p id="user-email">Loading user email...</p>
-        </div>
         <!-- Add chat list and other content here -->
     </div>
 
@@ -109,10 +100,9 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        // Display user email if signed in
+        // Display user profile photo if signed in
         auth.onAuthStateChanged((user) => {
             if (user) {
-                document.getElementById('user-email').textContent = `Logged in as: ${user.email}`;
                 loadUserProfilePhoto(user.email);
             } else {
                 // Redirect to sign-in page if no user is signed in
