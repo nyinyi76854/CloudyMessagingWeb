@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        #sidebar {
+            width: 200px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #333;
+            color: #fff;
+            padding: 15px;
+        }
+
+        #sidebar a {
+            display: block;
+            color: #fff;
+            padding: 10px;
+            text-decoration: none;
+        }
+
+        #sidebar a:hover {
+            background-color: #575757;
+        }
+
+        #main {
+            margin-left: 220px;
+            padding: 20px;
+        }
+
+        #profile-section {
+            text-align: center;
+        }
+
+        #profileImage {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ddd;
+        }
+
+        #info-section p {
+            margin: 10px 0;
+        }
+
+        #backButton {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <a href="profile.html" id="profileLink">Profile</a>
+        <a href="settings.html" id="settingsLink">Settings</a>
+        <a href="logout.html" id="logoutLink">Logout</a>
+    </div>
+    <div id="main">
+        <div id="profile-section">
+            <img id="profileImage" src="default-profile.png" alt="Profile Photo">
+        </div>
+        <div id="info-section">
+            <p><strong>Email:</strong> <span id="emailText">Loading...</span></p>
+            <p><strong>Username:</strong> <span id="usernameText">Loading...</span></p>
+            <p><strong>Age:</strong> <span id="ageText">Loading...</span></p>
+            <p><strong>Region:</strong> <span id="regionText">Loading...</span></p>
+            <p><strong>Gender:</strong> <span id="genderText">Loading...</span></p>
+        </div>
+        <button id="backButton">Back</button>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"></script>
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLsBTQ1neD4-pZybjhMaMMr4X1Y7f9stc",
+            authDomain: "cloudy-c02ac.firebaseapp.com",
+            projectId: "cloudy-c02ac",
+            storageBucket: "cloudy-c02ac.appspot.com",
+            messagingSenderId: "729506856215",
+            appId: "1:729506856215:web:06d56b828da9c6a72ccb52",
+            measurementId: "G-1MQMPGL2TB"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        const auth = firebase.auth();
+        const database = firebase.database();
+        const storage = firebase.storage();
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const user = auth.currentUser;
+            if (user) {
+                const email = user.email;
+
+                document.getElementById("emailText").textContent = email;
+
+                // Fetch and display profile photo
+                const profileImage = document.getElementById("profileImage");
+                const profileRef = database.ref('profilesphoto');
+                profileRef.orderByChild('timestamp').limitToLast(1).once('value').then(snapshot => {
+                    let latestPhotoUrl = null;
+
+                    snapshot.forEach(childSnapshot => {
+                        const uploaderEmail = childSnapshot.child('uploaderEmail').val();
+                        const photoUrl = childSnapshot.child('downloadUrl').val();
+
+                        if (uploaderEmail === email) {
+                            latestPhotoUrl = photoUrl;
+                        }
+                    });
+
+                    if (latestPhotoUrl) {
+                        profileImage.src = latestPhotoUrl;
+                    } else {
+                        profileImage.src = 'default-profile.png'; // Default profile photo
+                    }
+                });
+
+                // Fetch and display the latest username
+                const usernameRef = database.ref('usernameSet');
+                usernameRef.orderByChild('timestamp').limitToLast(1).once('value').then(snapshot => {
+                    let latestUsername = 'No username found';
+
+                    snapshot.forEach(childSnapshot => {
+                        const userEmail = childSnapshot.child('email').val();
+                        const username = childSnapshot.child('username').val();
+
+                        if (userEmail === email) {
+                            latestUsername = username;
+                        }
+                    });
+
+                    document.getElementById("usernameText").textContent = latestUsername;
+                });
+
+                // Fetch and display the latest age
+                const ageRef = database.ref('users');
+                ageRef.orderByChild('timestamp').limitToLast(1).once('value').then(snapshot => {
+                    let latestAge = 'Unknown';
+
+                    snapshot.forEach(childSnapshot => {
+                        const userEmail = childSnapshot.child('email').val();
+                        const age = childSnapshot.child('age').val();
+
+                        if (userEmail === email) {
+                            latestAge = age;
+                        }
+                    });
+
+                    document.getElementById("ageText").textContent = latestAge;
+                });
+
+                // Fetch and display the latest region
+                const locationRef = database.ref('location');
+                locationRef.orderByChild('timestamp').limitToLast(1).once('value').then(snapshot => {
+                    let latestRegion = 'Region not found';
+
+                    snapshot.forEach(childSnapshot => {
+                        const userEmail = childSnapshot.child('email').val();
+                        const continent = childSnapshot.child('continent').val();
+                        const country = childSnapshot.child('country').val();
+
+                        if (userEmail === email) {
+                            latestRegion = `${continent}/${country}`;
+                        }
+                    });
+
+                    document.getElementById("regionText").textContent = latestRegion;
+                });
+
+                // Fetch and display the latest gender
+                const genderRef = database.ref('gender');
+                genderRef.orderByChild('timestamp').limitToLast(1).once('value').then(snapshot => {
+                    let latestGender = 'Unknown';
+
+                    snapshot.forEach(childSnapshot => {
+                        const userEmail = childSnapshot.child('email').val();
+                        const gender = childSnapshot.child('gender').val();
+
+                        if (userEmail === email) {
+                            latestGender = gender;
+                        }
+                    });
+
+                    document.getElementById("genderText").textContent = latestGender;
+                });
+            }
+
+            document.getElementById("backButton").addEventListener("click", function() {
+                window.history.back();
+            });
+        });
+    </script>
+</body>
+</html>
