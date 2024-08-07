@@ -4,196 +4,196 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
 
-        #header {
-            width: 100%;
-            padding: 10px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: #333;
-            color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-        }
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #ddd;
+}
 
-        #backButton, #settingsButton {
-            color: #fff;
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-        }
+.header-button {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+}
 
-        #profile-section {
-            text-align: center;
-            margin-top: 60px; /* To position below the header */
-        }
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
 
-        #profileImage {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #ddd;
-        }
+.profile-circle-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+}
 
-        #info-section {
-            margin-top: 20px;
-            text-align: center;
-        }
+.info-section {
+    margin-top: 20px;
+    text-align: center;
+}
 
-        #info-section p {
-            margin: 10px 0;
-            font-size: 16px;
-        }
+.info-section p {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
     </style>
 </head>
 <body>
-    <div id="header">
-        <button id="backButton"><i class="fas fa-arrow-left"></i></button>
-        <button id="settingsButton"><i class="fas fa-cog"></i></button>
+    <div class="header">
+        <button id="backButton" class="header-button">← Back</button>
+        <button id="settingsButton" class="header-button">⚙️ Settings</button>
     </div>
-    <div id="profile-section">
-        <img id="profileImage" src="user_1077114.png" alt="Profile Photo">
+
+    <div class="profile-section">
+        <img id="profileImageView" class="profile-circle-image" src="user_1077114.png" alt="Profile Photo">
+        <div class="info-section">
+            <p id="emailTextView">Email: </p>
+            <p id="usernameTextView">Username: </p>
+            <p id="regionTextView">Region: </p>
+            <p id="genderTextView">Gender: </p>
+            <p id="ageTextView">Age: </p>
+        </div>
     </div>
-    <div id="info-section">
-        <p><strong>Email:</strong> <span id="emailText">Loading...</span></p>
-        <p><strong>Username:</strong> <span id="usernameText">Loading...</span></p>
-        <p><strong>Age:</strong> <span id="ageText">Loading...</span></p>
-        <p><strong>Region:</strong> <span id="regionText">Loading...</span></p>
-        <p><strong>Gender:</strong> <span id="genderText">Loading...</span></p>
-    </div>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js"></script>
     <script>
         // Your Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBLsBTQ1neD4-pZybjhMaMMr4X1Y7f9stc",
-            authDomain: "cloudy-c02ac.firebaseapp.com",
-            projectId: "cloudy-c02ac",
-            storageBucket: "cloudy-c02ac.appspot.com",
-            messagingSenderId: "729506856215",
-            appId: "1:729506856215:web:06d56b828da9c6a72ccb52",
-            measurementId: "G-1MQMPGL2TB"
-        };
+const firebaseConfig = {
+    apiKey: "AIzaSyBLsBTQ1neD4-pZybjhMaMMr4X1Y7f9stc",
+    authDomain: "cloudy-c02ac.firebaseapp.com",
+    projectId: "cloudy-c02ac",
+    storageBucket: "cloudy-c02ac.appspot.com",
+    messagingSenderId: "729506856215",
+    appId: "1:729506856215:web:06d56b828da9c6a72ccb52",
+    measurementId: "G-1MQMPGL2TB"
+};
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
 
-        const auth = firebase.auth();
-        const database = firebase.database();
-        const storage = firebase.storage();
+// Get current user
+const auth = firebase.auth();
+const database = firebase.database();
+const storage = firebase.storage();
 
-        document.addEventListener("DOMContentLoaded", function() {
-            const user = auth.currentUser;
-            if (user) {
-                const email = user.email;
+auth.onAuthStateChanged(user => {
+    if (user) {
+        const email = user.email;
 
-                document.getElementById("emailText").textContent = email;
+        // Fetch and display user information
+        fetchAndDisplayProfilePhoto(email);
+        fetchAndDisplayUsername(email);
+        fetchAndDisplayRegion(email);
+        fetchAndDisplayGender(email);
+        fetchAndDisplayAge(email);
+    } else {
+        // User is not logged in, redirect or show error
+    }
+});
 
-                // Fetch and display profile photo
-                const profileImage = document.getElementById("profileImage");
-                const profileRef = database.ref('profilesphoto');
-                profileRef.orderByChild('timestamp').limitToLast(1).once('value').then(snapshot => {
-                    let latestPhotoUrl = null;
+function fetchAndDisplayProfilePhoto(email) {
+    const ref = database.ref("profilesphoto");
+    ref.orderByChild("uploaderEmail").equalTo(email).once("value", snapshot => {
+        let latestPhotoUrl = null;
+        let latestTimestamp = 0;
 
-                    snapshot.forEach(childSnapshot => {
-                        const uploaderEmail = childSnapshot.child('uploaderEmail').val();
-                        const photoUrl = childSnapshot.child('downloadUrl').val();
+        snapshot.forEach(data => {
+            const uploaderEmail = data.child("uploaderEmail").val();
+            const timestamp = data.child("timestamp").val();
+            const photoUrl = data.child("downloadUrl").val();
 
-                        if (uploaderEmail === email) {
-                            latestPhotoUrl = photoUrl;
-                        }
-                    });
-
-                    if (latestPhotoUrl) {
-                        profileImage.src = latestPhotoUrl;
-                    } else {
-                        profileImage.src = 'user_1077114.png';
-                    }
-                });
-
-                // Fetch and display latest username
-                const usernameRef = database.ref('usernameSet');
-                usernameRef.orderByChild('email').equalTo(email).limitToLast(1).once('value').then(snapshot => {
-                    let latestUsername = 'No username found';
-
-                    snapshot.forEach(childSnapshot => {
-                        const username = childSnapshot.child('username').val();
-                        latestUsername = username || latestUsername;
-                    });
-
-                    document.getElementById("usernameText").textContent = latestUsername;
-                });
-
-                // Fetch and display latest age
-                const ageRef = database.ref('users');
-                ageRef.orderByChild('email').equalTo(email).limitToLast(1).once('value').then(snapshot => {
-                    let latestAge = 'Unknown';
-
-                    snapshot.forEach(childSnapshot => {
-                        const age = childSnapshot.child('age').val();
-                        latestAge = age || latestAge;
-                    });
-
-                    document.getElementById("ageText").textContent = latestAge;
-                });
-
-                // Fetch and display latest region
-                const locationRef = database.ref('location');
-                locationRef.orderByChild('email').equalTo(email).limitToLast(1).once('value').then(snapshot => {
-                    let latestRegion = 'Region not found';
-
-                    snapshot.forEach(childSnapshot => {
-                        const continent = childSnapshot.child('continent').val();
-                        const country = childSnapshot.child('country').val();
-                        if (continent && country) {
-                            latestRegion = `${continent}/${country}`;
-                        }
-                    });
-
-                    document.getElementById("regionText").textContent = latestRegion;
-                });
-
-                // Fetch and display latest gender
-                const genderRef = database.ref('gender');
-                genderRef.orderByChild('email').equalTo(email).limitToLast(1).once('value').then(snapshot => {
-                    let latestGender = 'Unknown';
-
-                    snapshot.forEach(childSnapshot => {
-                        const gender = childSnapshot.child('gender').val();
-                        latestGender = gender || latestGender;
-                    });
-
-                    document.getElementById("genderText").textContent = latestGender;
-                });
+            if (uploaderEmail === email && timestamp > latestTimestamp) {
+                latestTimestamp = timestamp;
+                latestPhotoUrl = photoUrl;
             }
-
-            // Set up the click listener for the back button
-            document.getElementById("backButton").addEventListener("click", function() {
-                window.history.back();
-            });
-
-            // Set up the click listener for the settings button
-            document.getElementById("settingsButton").addEventListener("click", function() {
-                window.location.href = 'settings.html';
-            });
         });
+
+        const profileImageView = document.getElementById("profileImageView");
+        if (latestPhotoUrl) {
+            profileImageView.src = latestPhotoUrl;
+        } else {
+            profileImageView.src = "user_1077114.png";
+        }
+    });
+}
+
+function fetchAndDisplayUsername(email) {
+    const ref = database.ref("usernameSet");
+    ref.orderByChild("email").equalTo(email).once("value", snapshot => {
+        let username = "No username found";
+        snapshot.forEach(data => {
+            username = data.child("username").val() || username;
+        });
+        document.getElementById("usernameTextView").textContent = "Username: " + username;
+    });
+}
+
+function fetchAndDisplayRegion(email) {
+    const ref = database.ref("location");
+    ref.orderByChild("email").equalTo(email).once("value", snapshot => {
+        let region = "Region not found";
+        snapshot.forEach(data => {
+            const continent = data.child("continent").val();
+            const country = data.child("country").val();
+            if (continent && country) {
+                region = `${continent}/${country}`;
+            }
+        });
+        document.getElementById("regionTextView").textContent = "Region: " + region;
+    });
+}
+
+function fetchAndDisplayGender(email) {
+    const ref = database.ref("gender");
+    ref.orderByChild("email").equalTo(email).once("value", snapshot => {
+        let gender = "Unknown";
+        snapshot.forEach(data => {
+            gender = data.child("gender").val() || gender;
+        });
+        document.getElementById("genderTextView").textContent = "Gender: " + gender;
+    });
+}
+
+function fetchAndDisplayAge(email) {
+    const ref = database.ref("users");
+    ref.orderByChild("email").equalTo(email).once("value", snapshot => {
+        let age = "Unknown";
+        snapshot.forEach(data => {
+            age = data.child("age").val() || age;
+        });
+        document.getElementById("ageTextView").textContent = "Age: " + age;
+    });
+}
+
+// Back button functionality
+document.getElementById("backButton").addEventListener("click", () => {
+    window.history.back();
+});
+
+// Settings button functionality
+document.getElementById("settingsButton").addEventListener("click", () => {
+    window.location.href = "setting.html";
+});
+
     </script>
 </body>
 </html>
