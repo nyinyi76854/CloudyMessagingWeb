@@ -9,11 +9,40 @@
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        .profile-img {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin-right: 20px;
+        }
+        .header-title {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .search-button {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 18px;
         }
         .container {
+            padding: 80px 20px 20px;
             background: #fff;
-            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             max-width: 600px;
@@ -26,6 +55,9 @@
             border-radius: 4px;
         }
         .logout-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
@@ -39,18 +71,25 @@
     </style>
 </head>
 <body>
+    <div class="header">
+        <img src="" alt="Profile" id="profile-img" class="profile-img">
+        <div class="header-title">Cloudy</div>
+        <button class="search-button" onclick="window.location.href='search.html'">&#128269;</button>
+    </div>
+
     <div class="container">
-        <h2>Chat List</h2>
         <div class="user-info">
             <p id="user-email">Loading user email...</p>
         </div>
         <!-- Add chat list and other content here -->
-        <button class="logout-button" id="logout-button">Logout</button>
     </div>
+
+    <button class="logout-button" id="logout-button">Logout</button>
 
     <!-- Firebase JavaScript SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
         // Your web app's Firebase configuration
@@ -68,16 +107,42 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const database = firebase.database();
 
         // Display user email if signed in
         auth.onAuthStateChanged((user) => {
             if (user) {
                 document.getElementById('user-email').textContent = `Logged in as: ${user.email}`;
+                loadUserProfilePhoto(user.email);
             } else {
                 // Redirect to sign-in page if no user is signed in
                 window.location.href = 'index.html';
             }
         });
+
+        // Load user profile photo
+        function loadUserProfilePhoto(currentUser) {
+            const ref = database.ref('profilesphoto');
+            ref.once('value', (snapshot) => {
+                let latestPhotoUrl = null;
+                let latestTimestamp = 0;
+
+                snapshot.forEach((data) => {
+                    const uploaderEmail = data.child('uploaderEmail').val();
+                    const timestamp = data.child('timestamp').val();
+                    const photoUrl = data.child('downloadUrl').val();
+
+                    if (uploaderEmail === currentUser && timestamp > latestTimestamp) {
+                        latestTimestamp = timestamp;
+                        latestPhotoUrl = photoUrl;
+                    }
+                });
+
+                if (latestPhotoUrl) {
+                    document.getElementById('profile-img').src = latestPhotoUrl;
+                }
+            });
+        }
 
         // Handle logout
         document.getElementById('logout-button').addEventListener('click', () => {
