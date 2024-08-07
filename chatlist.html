@@ -253,6 +253,7 @@
                 window.location.href = 'index.html';
             }
         });
+
 function loadChatItems() {
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -287,32 +288,32 @@ function loadChatItems() {
             if (chatPartner) {
                 // Update the latest message if it's newer
                 if (!latestMessages[chatPartner] || latestMessages[chatPartner].timestamp < timestamp) {
-                    latestMessages[chatPartner] = { message, chatPartner, timestamp };
+                    latestMessages[chatPartner] = { message, senderEmail, timestamp, chatPartner };
                 }
             }
         });
 
         // Display the latest message for each chat partner
         for (const chatPartner in latestMessages) {
-            const { message, chatPartner, timestamp } = latestMessages[chatPartner];
+            const { message, senderEmail, timestamp } = latestMessages[chatPartner];
             const truncatedMessage = message.length > 26 ? message.substring(0, 26) + '...' : message;
 
             // Create a new chat item container
             const chatItem = document.createElement('div');
             chatItem.className = 'chat-item';
 
-            // Fetch the profile image URL for the chat partner
-            fetchProfileImage(chatPartner, (profileImageUrl) => {
+            // Fetch the profile image URL for the senderEmail (associated with the profile photo)
+            fetchProfileImage(senderEmail, (profileImageUrl) => {
                 // Create and add the profile image element
                 const profileImg = document.createElement('img');
                 profileImg.src = profileImageUrl || 'user_1077114.png'; // Fallback to default image
                 profileImg.className = 'profile-img'; // Optional: Add a class for styling
                 chatItem.appendChild(profileImg);
 
-                // Create and add the sender email element
+                // Create and add the consistent sender email element
                 const senderEmailDiv = document.createElement('div');
                 senderEmailDiv.className = 'sender-email';
-                senderEmailDiv.innerText = chatPartner; // Constant chat partner email
+                senderEmailDiv.innerText = senderEmail;
                 chatItem.appendChild(senderEmailDiv);
 
                 // Create and add the message text element
