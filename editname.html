@@ -33,7 +33,7 @@
         }
 
         #nameInput {
-            width: 80%;
+            width: 70%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -47,9 +47,6 @@
             border-radius: 4px;
             color: #fff;
             cursor: pointer;
-        }
-
-        #submitButton.hidden {
             display: none;
         }
 
@@ -84,9 +81,9 @@
         </div>
         <div class="input-section">
             <input type="text" id="nameInput" placeholder="Enter name">
-            <button id="submitButton" class="hidden">Submit</button>
+            <button id="submitButton">Submit</button>
         </div>
-        <div id="nameList" class="name-list"></div>
+        <ul id="nameList" class="name-list"></ul>
     </div>
 
     <!-- Firebase JavaScript SDK -->
@@ -116,6 +113,13 @@
         const nameList = document.getElementById('nameList');
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Check for user authentication
+            auth.onAuthStateChanged(user => {
+                if (!user) {
+                    window.location.href = 'index.html';
+                }
+            });
+
             // Add event listener to toggle submit button visibility
             nameInput.addEventListener('input', () => {
                 submitButton.style.display = nameInput.value.trim() === '' ? 'none' : 'inline-block';
@@ -160,11 +164,11 @@
             const databaseRef = database.ref('names');
             const query = databaseRef.orderByChild('email').equalTo(currentUserEmail);
 
-            query.on('value', (snapshot) => {
+            query.on('value', snapshot => {
                 nameList.innerHTML = '';
-                snapshot.forEach((childSnapshot) => {
+                snapshot.forEach(childSnapshot => {
                     const nameEntry = childSnapshot.val();
-                    const listItem = document.createElement('div');
+                    const listItem = document.createElement('li');
                     listItem.classList.add('name-item');
                     listItem.innerHTML = `
                         <div>${nameEntry.name}</div>
