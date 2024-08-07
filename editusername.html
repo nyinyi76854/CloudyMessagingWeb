@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Username</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        .container h2 {
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+        }
+        .button-group button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .button-group button.save {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .button-group button.cancel {
+            background-color: #f44336;
+            color: white;
+        }
+        .hidden {
+            display: none;
+        }
+        .username-list {
+            margin-top: 20px;
+        }
+        .username-list h3 {
+            margin-bottom: 10px;
+        }
+        .username-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .username-list li {
+            background-color: #eee;
+            margin-bottom: 5px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Set Username</h2>
+        <div class="input-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" value="@" required>
+        </div>
+        <div class="button-group">
+            <button class="save hidden" onclick="saveUsername()">Save</button>
+            <button class="cancel hidden" onclick="cancelUsername()">Cancel</button>
+        </div>
+        <p id="message"></p>
+        <div class="username-list">
+            <h3>My Usernames</h3>
+            <ul id="usernameList"></ul>
+        </div>
+    </div>
+
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js"></script>
+
+    <script>
+       const firebaseConfig = {
+            apiKey: "AIzaSyBcTEVvxXmv5N8dJav4xNDRy5hXZRjVeM4",
+            authDomain: "chatflow-59776.firebaseapp.com",
+            databaseURL: "https://chatflow-59776-default-rtdb.firebaseio.com",
+            projectId: "chatflow-59776",
+            storageBucket: "chatflow-59776.appspot.com",
+            messagingSenderId: "549003131640",
+            appId: "1:549003131640:web:3f4a7b8cef4c0d8a2b990d",
+            measurementId: "G-V2180PR5CR"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        let userEmail = '';
+
+        // Check user authentication
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                userEmail = user.email;
+                fetchUsernames();
+            } else {
+                // No user is signed in, redirect to login page
+                window.location.href = 'index.html';
+            }
+        });
+
+        document.getElementById('username').addEventListener('input', function() {
+            const saveButton = document.querySelector('.save');
+            const cancelButton = document.querySelector('.cancel');
+            const username = this.value.trim();
+            if (username) {
+                saveButton.classList.remove('hidden');
+                cancelButton.classList.remove('hidden');
+            } else {
+                saveButton.classList.add('hidden');
+                cancelButton.classList.add('hidden');
+            }
+        });
+
+        function saveUsername() {
+            const username = document.getElementById('username').value.trim();
+            if (!username) {
+                showMessage('Please enter your username', true);
+                return;
+            }
+            checkUsernameExists(username);
+        }
+
+        function cancelUsername() {
+            // Clear the input field and hide the buttons
+            document.getElementById('username').value = '@';
+            const saveButton = document.querySelector('.save');
+            const cancelButton = document.querySelector('.cancel');
+            saveButton.classList.add('hidden');
+            cancelButton.classList.add('hidden');
+            showMessage('');
+        }
+
+        function checkUsernameExists(username) {
+            const databaseReference = firebase.database().ref('usernameSet');
+            databaseReference.orderByChild('username').equalTo(username).once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    showMessage('Username already exists', true);
+                } else {
+                    saveUsernameToDatabase(username);
+                }
+            }).catch((error) => {
+                showMessage('Failed to check username', true);
+            });
+        }
+
+        function saveUsernameToDatabase(username) {
+            const timestamp = Date.now();
+            const databaseReference = firebase.database().ref('usernameSet');
+            const userData = {
+                email: userEmail,
+                username: username,
+                timestamp: timestamp
+            };
+
+            databaseReference.push(userData).then(() => {
+                showMessage('Username saved successfully');
+                fetchUsernames(); // Refresh the username list
+            }).catch(() => {
+                showMessage('Failed to save username', true);
+            });
+        }
+
+        function fetchUsernames() {
+            const databaseReference = firebase.database().ref('usernameSet');
+            databaseReference.orderByChild('email').equalTo(userEmail).once('value', (snapshot) => {
+                const usernameList = document.getElementById('usernameList');
+                usernameList.innerHTML = ''; // Clear the list
+                snapshot.forEach((childSnapshot) => {
+                    const data = childSnapshot.val();
+                    const li = document.createElement('li');
+                    li.textContent = `Username: ${data.username}, Timestamp: ${new Date(data.timestamp).toLocaleString()}`;
+                    usernameList.appendChild(li);
+                });
+            }).catch((error) => {
+                showMessage('Failed to fetch usernames', true);
+            });
+        }
+
+        function showMessage(message, isError = false) {
+            const messageElem = document.getElementById('message');
+            messageElem.textContent = message;
+            messageElem.style.color = isError ? 'red' : 'green';
+        }
+    </script>
+</body>
+</html>
