@@ -242,7 +242,15 @@
             }
         });
 function loadChatItems() {
-    const ref = database.ref('chatMessages');
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        // Redirect to sign-in page if no user is signed in
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const currentUserEmail = currentUser.email;
+    const ref = database.ref('messages');
     ref.once('value', (snapshot) => {
         const chatContainer = document.getElementById('chatContainer');
         chatContainer.innerHTML = ''; // Clear existing chat items
@@ -250,32 +258,37 @@ function loadChatItems() {
         snapshot.forEach((data) => {
             const message = data.child('text').val();
             const senderEmail = data.child('senderEmail').val();
+            const recipientEmail = data.child('receiverEmail').val();
             const timestamp = data.child('sentTime').val();
 
-            // Create a new chat item container
-            const chatItem = document.createElement('div');
-            chatItem.className = 'chat-item';
+            // Check if the message involves the current user
+            if (senderEmail === currentUserEmail || recipientEmail === currentUserEmail) {
+                // Create a new chat item container
+                const chatItem = document.createElement('div');
+                chatItem.className = 'chat-item';
 
-            // Fetch the profile image URL for the sender
-            fetchProfileImage(senderEmail, (profileImageUrl) => {
-                // Create and add the profile image element
-                const profileImg = document.createElement('img');
-                profileImg.src = profileImageUrl || 'user_1077114.png'; // Fallback to default image
-                profileImg.className = 'profile-img'; // Optional: Add a class for styling
-                chatItem.appendChild(profileImg);
+                // Fetch the profile image URL for the sender
+                fetchProfileImage(senderEmail, (profileImageUrl) => {
+                    // Create and add the profile image element
+                    const profileImg = document.createElement('img');
+                    profileImg.src = profileImageUrl || 'user_1077114.png'; // Fallback to default image
+                    profileImg.className = 'profile-img'; // Optional: Add a class for styling
+                    chatItem.appendChild(profileImg);
 
-                // Create and add the message text element
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message';
-                messageDiv.innerText = message;
-                chatItem.appendChild(messageDiv);
+                    // Create and add the message text element
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message';
+                    messageDiv.innerText = message;
+                    chatItem.appendChild(messageDiv);
 
-                // Append the chat item to the container
-                chatContainer.appendChild(chatItem);
-            });
+                    // Append the chat item to the container
+                    chatContainer.appendChild(chatItem);
+                });
+            }
         });
     });
 }
+
 
 // Function to fetch the profile image URL for a given email
 function fetchProfileImage(email, callback) {
