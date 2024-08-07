@@ -6,52 +6,49 @@
     <title>Account</title>
     <style>
         body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-}
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: #f8f8f8;
-    border-bottom: 1px solid #ddd;
-}
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-bottom: 1px solid #ddd;
+        }
 
-.header-button {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-}
+        .header-button {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
 
-.profile-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-}
+        .profile-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
 
-.profile-circle-image {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #ddd;
-}
+        .profile-circle-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ddd;
+        }
 
-.info-section {
-    margin-top: 20px;
-    text-align: center;
-}
+        .info-section {
+            margin-top: 20px;
+        }
 
-.info-section p {
-    margin: 5px 0;
-    font-size: 16px;
-}
-
+        .info-section p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -61,7 +58,7 @@
     </div>
 
     <div class="profile-section">
-        <img id="profileImageView" class="profile-circle-image" src="user_1077114.png" alt="Profile Photo">
+        <img id="profileImageView" class="profile-circle-image" src="placeholder-profile.png" alt="Profile Photo">
         <div class="info-section">
             <p id="emailTextView">Email: </p>
             <p id="usernameTextView">Username: </p>
@@ -71,129 +68,116 @@
         </div>
     </div>
 
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js"></script>
     <script>
-        // Your Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyBLsBTQ1neD4-pZybjhMaMMr4X1Y7f9stc",
-    authDomain: "cloudy-c02ac.firebaseapp.com",
-    projectId: "cloudy-c02ac",
-    storageBucket: "cloudy-c02ac.appspot.com",
-    messagingSenderId: "729506856215",
-    appId: "1:729506856215:web:06d56b828da9c6a72ccb52",
-    measurementId: "G-1MQMPGL2TB"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcTEVvxXmv5N8dJav4xNDRy5hXZRjVeM4",
+            authDomain: "chatflow-59776.firebaseapp.com",
+            databaseURL: "https://chatflow-59776-default-rtdb.firebaseio.com",
+            projectId: "chatflow-59776",
+            storageBucket: "chatflow-59776.appspot.com",
+            messagingSenderId: "549003131640",
+            appId: "1:549003131640:web:3f4a7b8cef4c0d8a2b990d",
+            measurementId: "G-V2180PR5CR"
+        };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
 
-// Get current user
-const auth = firebase.auth();
-const database = firebase.database();
-const storage = firebase.storage();
+        // Firebase references
+        const auth = firebase.auth();
+        const database = firebase.database();
+        
 
-auth.onAuthStateChanged(user => {
-    if (user) {
-        const email = user.email;
+        document.addEventListener('DOMContentLoaded', function () {
+            const user = auth.currentUser;
+            if (user) {
+                const email = user.email;
 
-        // Fetch and display user information
-        fetchAndDisplayProfilePhoto(email);
-        fetchAndDisplayUsername(email);
-        fetchAndDisplayRegion(email);
-        fetchAndDisplayGender(email);
-        fetchAndDisplayAge(email);
-    } else {
-        // User is not logged in, redirect or show error
-    }
-});
+                // Load user profile photo
+                const profileImageView = document.getElementById('profileImageView');
+                const profileRef = database.ref('profilesphoto');
+                profileRef.orderByChild('uploaderEmail').equalTo(email).once('value', snapshot => {
+                    let latestPhotoUrl = null;
+                    let latestTimestamp = 0;
 
-function fetchAndDisplayProfilePhoto(email) {
-    const ref = database.ref("profilesphoto");
-    ref.orderByChild("uploaderEmail").equalTo(email).once("value", snapshot => {
-        let latestPhotoUrl = null;
-        let latestTimestamp = 0;
+                    snapshot.forEach(childSnapshot => {
+                        const timestamp = childSnapshot.child('timestamp').val();
+                        const photoUrl = childSnapshot.child('downloadUrl').val();
 
-        snapshot.forEach(data => {
-            const uploaderEmail = data.child("uploaderEmail").val();
-            const timestamp = data.child("timestamp").val();
-            const photoUrl = data.child("downloadUrl").val();
+                        if (timestamp > latestTimestamp) {
+                            latestTimestamp = timestamp;
+                            latestPhotoUrl = photoUrl;
+                        }
+                    });
 
-            if (uploaderEmail === email && timestamp > latestTimestamp) {
-                latestTimestamp = timestamp;
-                latestPhotoUrl = photoUrl;
+                    if (latestPhotoUrl) {
+                        profileImageView.src = latestPhotoUrl;
+                    } else {
+                        profileImageView.src = 'placeholder-profile.png'; // Fallback image
+                    }
+                });
+
+                // Load other user information
+                const emailTextView = document.getElementById('emailTextView');
+                const usernameTextView = document.getElementById('usernameTextView');
+                const regionTextView = document.getElementById('regionTextView');
+                const genderTextView = document.getElementById('genderTextView');
+                const ageTextView = document.getElementById('ageTextView');
+
+                database.ref('names').orderByChild('email').equalTo(email).once('value', snapshot => {
+                    let userName = '';
+                    snapshot.forEach(childSnapshot => {
+                        const name = childSnapshot.child('name').val();
+                        userName = name || email;
+                    });
+                    emailTextView.textContent = `Email: ${userName}`;
+                });
+
+                database.ref('usernameSet').orderByChild('email').equalTo(email).once('value', snapshot => {
+                    snapshot.forEach(childSnapshot => {
+                        const username = childSnapshot.child('username').val();
+                        usernameTextView.textContent = `Username: ${username || 'No username found'}`;
+                    });
+                });
+
+                database.ref('location').orderByChild('email').equalTo(email).once('value', snapshot => {
+                    snapshot.forEach(childSnapshot => {
+                        const continent = childSnapshot.child('continent').val();
+                        const country = childSnapshot.child('country').val();
+                        regionTextView.textContent = `Region: ${continent ? continent + '/' : ''}${country || 'Region not found'}`;
+                    });
+                });
+
+                database.ref('gender').orderByChild('email').equalTo(email).once('value', snapshot => {
+                    snapshot.forEach(childSnapshot => {
+                        const gender = childSnapshot.child('gender').val();
+                        genderTextView.textContent = `Gender: ${gender || 'Unknown'}`;
+                    });
+                });
+
+                database.ref('users').orderByChild('email').equalTo(email).once('value', snapshot => {
+                    snapshot.forEach(childSnapshot => {
+                        const age = childSnapshot.child('age').val();
+                        ageTextView.textContent = `Age: ${age || 'Unknown'}`;
+                    });
+                });
             }
+
+            // Back button functionality
+            document.getElementById('backButton').addEventListener('click', () => {
+                window.history.back();
+            });
+
+            // Settings button functionality
+            document.getElementById('settingsButton').addEventListener('click', () => {
+                window.location.href = 'setting.html'; // Update with your settings page URL
+            });
         });
-
-        const profileImageView = document.getElementById("profileImageView");
-        if (latestPhotoUrl) {
-            profileImageView.src = latestPhotoUrl;
-        } else {
-            profileImageView.src = "user_1077114.png";
-        }
-    });
-}
-
-function fetchAndDisplayUsername(email) {
-    const ref = database.ref("usernameSet");
-    ref.orderByChild("email").equalTo(email).once("value", snapshot => {
-        let username = "No username found";
-        snapshot.forEach(data => {
-            username = data.child("username").val() || username;
-        });
-        document.getElementById("usernameTextView").textContent = "Username: " + username;
-    });
-}
-
-function fetchAndDisplayRegion(email) {
-    const ref = database.ref("location");
-    ref.orderByChild("email").equalTo(email).once("value", snapshot => {
-        let region = "Region not found";
-        snapshot.forEach(data => {
-            const continent = data.child("continent").val();
-            const country = data.child("country").val();
-            if (continent && country) {
-                region = `${continent}/${country}`;
-            }
-        });
-        document.getElementById("regionTextView").textContent = "Region: " + region;
-    });
-}
-
-function fetchAndDisplayGender(email) {
-    const ref = database.ref("gender");
-    ref.orderByChild("email").equalTo(email).once("value", snapshot => {
-        let gender = "Unknown";
-        snapshot.forEach(data => {
-            gender = data.child("gender").val() || gender;
-        });
-        document.getElementById("genderTextView").textContent = "Gender: " + gender;
-    });
-}
-
-function fetchAndDisplayAge(email) {
-    const ref = database.ref("users");
-    ref.orderByChild("email").equalTo(email).once("value", snapshot => {
-        let age = "Unknown";
-        snapshot.forEach(data => {
-            age = data.child("age").val() || age;
-        });
-        document.getElementById("ageTextView").textContent = "Age: " + age;
-    });
-}
-
-// Back button functionality
-document.getElementById("backButton").addEventListener("click", () => {
-    window.history.back();
-});
-
-// Settings button functionality
-document.getElementById("settingsButton").addEventListener("click", () => {
-    window.location.href = "setting.html";
-});
-
     </script>
 </body>
 </html>
