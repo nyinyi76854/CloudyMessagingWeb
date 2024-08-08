@@ -125,6 +125,8 @@
         </div>
     </div>
 
+    <input type="file" id="photoPicker" style="display:none" accept="image/*">
+
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -159,6 +161,9 @@
         const modalProfileImage = document.getElementById('modalProfileImage');
         const closeModal = document.getElementById('closeModal');
         const deleteButton = document.getElementById('deleteButton');
+        const photoPicker = document.getElementById('photoPicker');
+
+        let profilePhotoExists = false;
 
         // Fetch user data
         auth.onAuthStateChanged(user => {
@@ -231,8 +236,10 @@
                     }
                 });
                 if (latestPhotoUrl) {
+                    profilePhotoExists = true;
                     profileImageView.src = latestPhotoUrl;
                 } else {
+                    profilePhotoExists = false;
                     profileImageView.src = 'user_1077114.png';
                 }
             });
@@ -240,9 +247,14 @@
 
         // Profile image click handler
         profileImageView.addEventListener('click', () => {
-            const profileImageUrl = profileImageView.src;
-            modalProfileImage.src = profileImageUrl;
-            imageModal.style.display = 'flex';
+            if (profilePhotoExists) {
+                const profileImageUrl = profileImageView.src;
+                modalProfileImage.src = profileImageUrl;
+                imageModal.style.display = 'flex';
+            } else {
+                // Trigger file input click to select a new photo
+                photoPicker.click();
+            }
         });
 
         // Close modal
@@ -250,40 +262,40 @@
             imageModal.style.display = 'none';
         });
 
-        // Delete photo
+        // Delete profile photo
         deleteButton.addEventListener('click', () => {
-            const photoUrl = modalProfileImage.src;
-            deleteProfilePhoto(photoUrl);
-        });
-
-        function deleteProfilePhoto(photoUrl) {
-            const profilesPhotoRef = database.ref('profilesphoto');
-            profilesPhotoRef.once('value').then(snapshot => {
+            const email = auth.currentUser.email;
+            database.ref('profilesphoto').orderByChild('uploaderEmail').equalTo(email).once('value').then(snapshot => {
                 snapshot.forEach(childSnapshot => {
-                    const photoDownloadUrl = childSnapshot.child('downloadUrl').val();
-                    if (photoDownloadUrl === photoUrl) {
-                        childSnapshot.ref.remove().then(() => {
-                            console.log('Photo deleted successfully');
-                            // Remove photo from the UI
-                            profileImageView.src = 'user_1077114.png';
-                            modalProfileImage.src = 'user_1077114.png';
-                            imageModal.style.display = 'none';
-                        }).catch(error => {
-                            console.error('Error deleting photo:', error);
-                        });
-                    }
+                    childSnapshot.ref.remove();
                 });
+                profileImageView.src = 'user_1077114.png';
+                profilePhotoExists = false;
+                imageModal.style.display = 'none';
             });
-        }
-
-        // Back button click handler
-        document.getElementById('backButton').addEventListener('click', () => {
-            window.history.back();
         });
 
-        // Settings button click handler
-        document.getElementById('settingsButton').addEventListener('click', () => {
-            window.location.href = 'settings.html';
+        // Handle file input change event
+        photoPicker.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const email = auth.currentUser.email;
+                const storageRef = storage.ref('profilesphoto/' + file.name);
+                storageRef.put(file).then(snapshot => {
+                    return snapshot.ref.getDownloadURL();
+                }).then(downloadURL => {
+                    const newPhotoRef = database.ref('profilesphoto').push();
+                    newPhotoRef.set({
+                        uploaderEmail: email,
+                        downloadUrl: downloadURL,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    profileImageView.src = downloadURL;
+                    profilePhotoExists = true;
+                }).catch(error => {
+                    console.error('Error uploading profile photo:', error);
+                });
+            }
         });
     </script>
 </body>
