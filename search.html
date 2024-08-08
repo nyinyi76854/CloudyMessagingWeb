@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Users</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 50px;
+        }
+        #searchEditText {
+            width: calc(100% - 22px);
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        #searchResultLayout {
+            display: none;
+            margin-top: 20px;
+        }
+        .profile-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .name-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+        .name-item:last-child {
+            border-bottom: none;
+        }
+        .timestamp {
+            color: #888;
+        }
+        #folderButton {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #folderButton:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <input type="text" id="searchEditText" placeholder="Search by email">
+        <div id="searchResultLayout">
+            <div id="nameTextView"></div>
+            <div id="emailTextView"></div>
+            <img id="profileImageView" class="profile-image" src="" alt="Profile Photo">
+        </div>
+        <button id="folderButton">Check Folder</button>
+    </div>
+
+    <!-- Firebase JavaScript SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcTEVvxXmv5N8dJav4xNDRy5hXZRjVeM4",
+            authDomain: "chatflow-59776.firebaseapp.com",
+            databaseURL: "https://chatflow-59776-default-rtdb.firebaseio.com",
+            projectId: "chatflow-59776",
+            storageBucket: "chatflow-59776.appspot.com",
+            messagingSenderId: "549003131640",
+            appId: "1:549003131640:web:3f4a7b8cef4c0d8a2b990d",
+            measurementId: "G-V2180PR5CR"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        const searchEditText = document.getElementById('searchEditText');
+        const searchResultLayout = document.getElementById('searchResultLayout');
+        const nameTextView = document.getElementById('nameTextView');
+        const emailTextView = document.getElementById('emailTextView');
+        const profileImageView = document.getElementById('profileImageView');
+        const folderButton = document.getElementById('folderButton');
+
+        searchEditText.addEventListener('input', () => {
+            performSearch(searchEditText.value);
+        });
+
+        emailTextView.addEventListener('click', () => {
+            const email = emailTextView.textContent;
+            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
+            
+            if (email === currentUserEmail) {
+                window.location.href = 'account.html';
+            } else {
+                window.location.href = `chat.html?header=${email}`;
+            }
+        });
+
+        folderButton.addEventListener('click', () => {
+            checkUserFolderExistence();
+        });
+
+        function performSearch(searchText) {
+            if (searchText) {
+                const query = database.ref('users').orderByChild('email').startAt(searchText).endAt(searchText + "\uf8ff");
+                query.once('value', (snapshot) => {
+                    snapshot.forEach(childSnapshot => {
+                        const email = childSnapshot.child('email').val();
+                        if (email) {
+                            loadUserProfilePhoto(email).then(photoUrl => {
+                                displaySearchResults(email, photoUrl);
+                            });
+                            return;
+                        }
+                    });
+                    searchResultLayout.style.display = 'none';
+                });
+            } else {
+                searchResultLayout.style.display = 'none';
+            }
+        }
+
+        function displaySearchResults(email, photoUrl) {
+            emailTextView.textContent = email;
+            fetchAndDisplayUserName(email);
+            if (photoUrl) {
+                profileImageView.src = photoUrl;
+            }
+            searchResultLayout.style.display = 'block';
+        }
+
+        function fetchAndDisplayUserName(email) {
+            database.ref('names').orderByChild('email').equalTo(email).once('value', (snapshot) => {
+                let lastTimestamp = 0;
+                let userName = null;
+                snapshot.forEach(childSnapshot => {
+                    const timestamp = childSnapshot.child('timestamp').val();
+                    const name = childSnapshot.child('name').val();
+                    if (timestamp > lastTimestamp && name) {
+                        lastTimestamp = timestamp;
+                        userName = name;
+                    }
+                });
+                nameTextView.textContent = userName || email;
+            });
+        }
+
+        function loadUserProfilePhoto(email) {
+            return new Promise((resolve, reject) => {
+                database.ref('profilesphoto').once('value', (snapshot) => {
+                    let latestPhotoUrl = null;
+                    let latestTimestamp = 0;
+                    snapshot.forEach(dataSnapshot => {
+                        const uploaderEmail = dataSnapshot.child('uploaderEmail').val();
+                        const timestamp = dataSnapshot.child('timestamp').val();
+                        const photoUrl = dataSnapshot.child('downloadUrl').val();
+                        if (uploaderEmail === email && timestamp > latestTimestamp) {
+                            latestTimestamp = timestamp;
+                            latestPhotoUrl = photoUrl;
+                        }
+                    });
+                    resolve(latestPhotoUrl);
+                });
+            });
+        }
+
+        function checkUserFolderExistence() {
+            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
+            database.ref('folders').orderByChild('folderCreator').equalTo(currentUserEmail).once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    showFolderOptionsDialog();
+                } else {
+                    showCreateFolderDialog();
+                }
+            });
+        }
+
+        function showFolderOptionsDialog() {
+            const optionsDialog = confirm("You already have a folder. Would you like to view your folders or create a new one?");
+            if (optionsDialog) {
+                window.location.href = 'folder-loading.html';
+            } else {
+                showCreateFolderDialog();
+            }
+        }
+
+        function showCreateFolderDialog() {
+            const createDialog = confirm("Are you sure that you want to create a folder?");
+            if (createDialog) {
+                showFolderNameInputDialog();
+            }
+        }
+
+        function showFolderNameInputDialog() {
+            const folderName = prompt("Enter the folder name:");
+            if (folderName) {
+                createFolder(folderName);
+            }
+        }
+
+        function createFolder(folderName) {
+            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
+            const folderId = database.ref().child('folders').push().key;
+            const timestamp = Date.now();
+
+            if (currentUserEmail && folderId) {
+                const folderData = {
+                    folderCreator: currentUserEmail,
+                    folderName: folderName,
+                    folderId: folderId,
+                    timestamp: timestamp
+                };
+
+                database.ref('folders/' + folderId).set(folderData)
+                    .then(() => alert('Folder created successfully'))
+                    .catch(() => alert('Failed to create folder'));
+            }
+        }
+    </script>
+</body>
+</html>
