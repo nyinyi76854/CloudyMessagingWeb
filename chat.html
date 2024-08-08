@@ -151,10 +151,9 @@
             if (!currentUser) return;
 
             const currentUserEmail = currentUser.email;
-            const messagesRef = database.ref('messages')
-                .orderByChild('sentTime');
-            
-            messagesRef.on('value', snapshot => {
+            const messagesRef = database.ref('messages');
+
+            messagesRef.orderByChild('sentTime').on('value', snapshot => {
                 messagesContainer.innerHTML = '';
                 snapshot.forEach(childSnapshot => {
                     const messageData = childSnapshot.val();
