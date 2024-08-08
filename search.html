@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
+    <title>Search Users</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,7 +11,7 @@
             margin: 0;
             padding: 0;
         }
-        .chat-container {
+        .container {
             max-width: 600px;
             margin: auto;
             padding: 20px;
@@ -19,74 +19,44 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             margin-top: 50px;
-            height: 80vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-        }
-        .message {
-            display: flex;
-            margin-bottom: 10px;
-        }
-        .message.sent {
-            justify-content: flex-end;
-        }
-        .message.received {
-            justify-content: flex-start;
-        }
-        .message-content {
-            max-width: 70%;
+        #searchEditText {
+            width: calc(100% - 22px);
             padding: 10px;
-            border-radius: 10px;
             font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 20px;
         }
-        .message.sent .message-content {
-            background-color: #dcf8c6;
+        #searchResultLayout {
+            display: none;
+            margin-top: 20px;
         }
-        .message.received .message-content {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
+        .profile-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
         }
-        .message-input-container {
+        .name-item {
             display: flex;
             align-items: center;
-            border-top: 1px solid #ddd;
             padding: 10px;
-            background-color: #fff;
-        }
-        .message-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            font-size: 16px;
-        }
-        .send-button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 10px 20px;
-            margin-left: 10px;
+            border-bottom: 1px solid #ddd;
             cursor: pointer;
+        }
+        .name-item:last-child {
+            border-bottom: none;
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div id="header" class="header">
-            <!-- Display email at the top -->
-        </div>
-        <div id="messages" class="messages">
-            <!-- Messages will be displayed here -->
-        </div>
-        <div class="message-input-container">
-            <input type="text" id="messageInput" class="message-input" placeholder="Type a message">
-            <button id="sendButton" class="send-button">Send</button>
+    <div class="container">
+        <input type="text" id="searchEditText" placeholder="Search by email">
+        <div id="searchResultLayout">
+            <div id="nameTextView"></div>
+            <div id="emailTextView"></div>
+            <img id="profileImageView" class="profile-image" src="" alt="Profile Photo">
         </div>
     </div>
 
@@ -94,7 +64,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
     <script>
         // Firebase configuration
         const firebaseConfig = {
@@ -113,105 +82,90 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const emailToInteractWith = urlParams.get('header');
-        const header = document.getElementById('header');
-        const messagesContainer = document.getElementById('messages');
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendButton');
+        const searchEditText = document.getElementById('searchEditText');
+        const searchResultLayout = document.getElementById('searchResultLayout');
+        const nameTextView = document.getElementById('nameTextView');
+        const emailTextView = document.getElementById('emailTextView');
+        const profileImageView = document.getElementById('profileImageView');
 
-        header.textContent = emailToInteractWith;
+        searchEditText.addEventListener('input', () => {
+            performSearch(searchEditText.value);
+        });
 
-        // Function to send a message
-        function sendMessage(message) {
-            const user = auth.currentUser;
-            const senderEmail = user ? user.email : '';
-            const currentTimeMillis = Date.now();
-
-            firebase.messaging().getToken().then(senderFCMToken => {
-                retrieveReceiverFCMToken(emailToInteractWith, receiverFCMToken => {
-                    const messageData = {
-                        senderEmail: senderEmail,
-                        receiverEmail: emailToInteractWith,
-                        text: message,
-                        sentTime: currentTimeMillis,
-                        senderFCMToken: senderFCMToken,
-                        receiverFCMToken: receiverFCMToken || "",
-                        isRead: false
-                    };
-
-                    database.ref('messages').push(messageData);
-                });
-            });
-        }
-
-        // Function to retrieve messages
-        function retrieveMessages() {
-            const user = auth.currentUser;
-            const senderEmail = user ? user.email : '';
-
-            database.ref('messages')
-                .orderByChild('sentTime')
-                .on('value', snapshot => {
-                    messagesContainer.innerHTML = ''; // Clear existing messages
-
-                    snapshot.forEach(childSnapshot => {
-                        const message = childSnapshot.val();
-                        const isSentByUser = message.senderEmail === senderEmail;
-
-                        const messageElement = document.createElement('div');
-                        messageElement.classList.add('message');
-                        if (isSentByUser) {
-                            messageElement.classList.add('sent');
-                        } else {
-                            messageElement.classList.add('received');
-                        }
-
-                        const messageContent = document.createElement('div');
-                        messageContent.classList.add('message-content');
-                        messageContent.textContent = message.text;
-
-                        messageElement.appendChild(messageContent);
-                        messagesContainer.appendChild(messageElement);
-                    });
-
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to bottom
-                });
-        }
-
-        // Function to retrieve FCM token
-        function retrieveReceiverFCMToken(emailToInteractWith, callback) {
-            const userRef = firebase.database().ref('users').orderByChild('email').equalTo(emailToInteractWith);
-
-            userRef.once('value')
-                .then(snapshot => {
-                    if (snapshot.exists()) {
-                        snapshot.forEach(userSnapshot => {
-                            const receiverFCMToken = userSnapshot.child('fcmToken').val();
-                            callback(receiverFCMToken);
-                            return;
-                        });
-                    } else {
-                        callback(null);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error retrieving FCM token:', error);
-                    callback(null);
-                });
-        }
-
-        // Event listeners
-        sendButton.addEventListener('click', () => {
-            const message = messageInput.value.trim();
-            if (message) {
-                sendMessage(message);
-                messageInput.value = '';
+        emailTextView.addEventListener('click', () => {
+            const email = emailTextView.textContent;
+            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
+            
+            if (email === currentUserEmail) {
+                window.location.href = 'account.html';
+            } else {
+                window.location.href = chat.html?header=${email};
             }
         });
 
-        // Retrieve messages on page load
-        retrieveMessages();
+        function performSearch(searchText) {
+            if (searchText) {
+                const query = database.ref('users').orderByChild('email').startAt(searchText).endAt(searchText + "\uf8ff");
+                query.once('value', (snapshot) => {
+                    snapshot.forEach(childSnapshot => {
+                        const email = childSnapshot.child('email').val();
+                        if (email) {
+                            loadUserProfilePhoto(email).then(photoUrl => {
+                                displaySearchResults(email, photoUrl);
+                            });
+                            return;
+                        }
+                    });
+                    searchResultLayout.style.display = 'none';
+                });
+            } else {
+                searchResultLayout.style.display = 'none';
+            }
+        }
+
+        function displaySearchResults(email, photoUrl) {
+            emailTextView.textContent = email;
+            fetchAndDisplayUserName(email);
+            if (photoUrl) {
+                profileImageView.src = photoUrl;
+            }
+            searchResultLayout.style.display = 'block';
+        }
+
+        function fetchAndDisplayUserName(email) {
+            database.ref('names').orderByChild('email').equalTo(email).once('value', (snapshot) => {
+                let lastTimestamp = 0;
+                let userName = null;
+                snapshot.forEach(childSnapshot => {
+                    const timestamp = childSnapshot.child('timestamp').val();
+                    const name = childSnapshot.child('name').val();
+                    if (timestamp > lastTimestamp && name) {
+                        lastTimestamp = timestamp;
+                        userName = name;
+                    }
+                });
+                nameTextView.textContent = userName || email;
+            });
+        }
+
+        function loadUserProfilePhoto(email) {
+            return new Promise((resolve, reject) => {
+                database.ref('profilesphoto').once('value', (snapshot) => {
+                    let latestPhotoUrl = null;
+                    let latestTimestamp = 0;
+                    snapshot.forEach(dataSnapshot => {
+                        const uploaderEmail = dataSnapshot.child('uploaderEmail').val();
+                        const timestamp = dataSnapshot.child('timestamp').val();
+                        const photoUrl = dataSnapshot.child('downloadUrl').val();
+                        if (uploaderEmail === email && timestamp > latestTimestamp) {
+                            latestTimestamp = timestamp;
+                            latestPhotoUrl = photoUrl;
+                        }
+                    });
+                    resolve(latestPhotoUrl);
+                });
+            });
+        }
     </script>
 </body>
 </html>
