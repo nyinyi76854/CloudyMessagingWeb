@@ -4,100 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
             display: flex;
             flex-direction: column;
             height: 100vh;
-            margin: 0;
-            background-color: #f4f4f4;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         .header {
-            background-color: #0084ff;
-            color: white;
+            background-color: #007bff;
+            color: #fff;
             padding: 15px;
-            text-align: center;
             font-size: 18px;
-            font-weight: bold;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
         }
         .messages {
             flex: 1;
-            padding: 15px;
             overflow-y: auto;
+            padding: 15px;
         }
         .message {
-            display: flex;
             margin-bottom: 10px;
-        }
-        .message.sent {
-            justify-content: flex-end;
-        }
-        .message.received {
-            justify-content: flex-start;
-        }
-        .message .bubble {
-            max-width: 70%;
             padding: 10px;
-            border-radius: 20px;
-            background-color: #e0e0e0;
-            position: relative;
+            border-radius: 10px;
+            max-width: 75%;
         }
-        .message.sent .bubble {
-            background-color: #0084ff;
-            color: white;
+        .sent {
+            background-color: #007bff;
+            color: #fff;
+            margin-left: auto;
+            text-align: right;
         }
-        .message .bubble::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            width: 0;
-            height: 0;
-            border: 10px solid transparent;
-            transform: translateY(-50%);
-        }
-        .message.sent .bubble::after {
-            right: -10px;
-            border-left: 10px solid #0084ff;
-        }
-        .message.received .bubble::after {
-            left: -10px;
-            border-right: 10px solid #e0e0e0;
+        .received {
+            background-color: #e9e9eb;
+            color: #000;
         }
         .input-container {
             display: flex;
-            padding: 10px;
+            align-items: center;
             border-top: 1px solid #ddd;
-            background-color: #fff;
+            padding: 10px;
         }
-        .input-container input {
+        #messageInput {
             flex: 1;
             padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
         }
-        .input-container button {
-            background-color: #0084ff;
+        #sendButton {
+            background-color: #007bff;
             border: none;
-            color: white;
-            border-radius: 50%;
-            padding: 10px;
-            margin-left: 10px;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 4px;
             cursor: pointer;
         }
-        .input-container button i {
-            font-size: 18px;
+        #sendButton:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <div class="header" id="chatHeader"></div>
-    <div class="messages" id="messagesContainer"></div>
-    <div class="input-container">
-        <input type="text" id="messageInput" placeholder="Type a message">
-        <button id="sendButton"><i class="fas fa-paper-plane"></i></button>
+    <div class="container">
+        <div class="header" id="header">
+            <!-- Email will be set dynamically -->
+        </div>
+        <div class="messages" id="messages">
+            <!-- Messages will be displayed here -->
+        </div>
+        <div class="input-container">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <button id="sendButton">Send</button>
+        </div>
     </div>
 
     <!-- Firebase JavaScript SDK -->
@@ -117,59 +107,71 @@
             appId: "1:549003131640:web:3f4a7b8cef4c0d8a2b990d",
             measurementId: "G-V2180PR5CR"
         };
-
+        
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
         const messaging = firebase.messaging();
 
-        const chatHeader = document.getElementById('chatHeader');
-        const messagesContainer = document.getElementById('messagesContainer');
+        const queryParams = new URLSearchParams(window.location.search);
+        const emailToInteractWith = queryParams.get('header');
+        const header = document.getElementById('header');
+        const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
 
-        // Get email from query parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const emailToInteractWith = urlParams.get('header');
+        header.textContent = emailToInteractWith;
 
-        // Set chat header
-        chatHeader.textContent = emailToInteractWith;
+        function retrieveReceiverFCMToken(emailToInteractWith, callback) {
+            const userRef = firebase.database().ref('users')
+                .orderByChild('email')
+                .equalTo(emailToInteractWith);
+            
+            userRef.once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        snapshot.forEach(userSnapshot => {
+                            const receiverFCMToken = userSnapshot.child('fcmToken').val();
+                            callback(receiverFCMToken);
+                            return true; // Exit the loop early
+                        });
+                    } else {
+                        callback(null);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error retrieving FCM token:', error);
+                    callback(null);
+                });
+        }
 
-        // Load messages
         function loadMessages() {
             const currentUser = auth.currentUser;
             if (!currentUser) return;
 
             const currentUserEmail = currentUser.email;
+            const messagesRef = database.ref('messages')
+                .orderByChild('sentTime');
+            
+            messagesRef.on('value', snapshot => {
+                messagesContainer.innerHTML = '';
+                snapshot.forEach(childSnapshot => {
+                    const messageData = childSnapshot.val();
+                    if ((messageData.senderEmail === currentUserEmail && messageData.receiverEmail === emailToInteractWith) ||
+                        (messageData.senderEmail === emailToInteractWith && messageData.receiverEmail === currentUserEmail)) {
 
-            database.ref('messages').orderByChild('sentTime').on('child_added', (snapshot) => {
-                const messageData = snapshot.val();
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('message');
-                if (messageData.senderEmail === currentUserEmail) {
-                    messageElement.classList.add('sent');
-                } else {
-                    messageElement.classList.add('received');
-                }
-                messageElement.innerHTML = `<div class="bubble">${messageData.text}</div>`;
-                messagesContainer.appendChild(messageElement);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
+                        messageDiv.textContent = messageData.text;
+                        messagesContainer.appendChild(messageDiv);
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }
+                });
             });
         }
 
-        loadMessages();
-
-        // Send message
-        sendButton.addEventListener('click', () => {
-            const message = messageInput.value.trim();
-            if (message) {
-                sendMessage(message);
-                messageInput.value = '';
-            }
-        });
-
-         function sendMessage(message) {
+        function sendMessage(message) {
             const currentUser = auth.currentUser;
             if (!currentUser) return;
 
@@ -194,30 +196,15 @@
             });
         }
 
-         function retrieveReceiverFCMToken(emailToInteractWith, callback) {
-            const userRef = firebase.database().ref('users')
-                .orderByChild('email')
-                .equalTo(emailToInteractWith);
-            
-            userRef.once('value')
-                .then(snapshot => {
-                    if (snapshot.exists()) {
-                        snapshot.forEach(userSnapshot => {
-                            const receiverFCMToken = userSnapshot.child('fcmToken').val();
-                            callback(receiverFCMToken);
-                            return true; // Exit the loop early
-                        });
-                    } else {
-                        callback(null);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error retrieving FCM token:', error);
-                    callback(null);
-                });
-        }
+        sendButton.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (message) {
+                sendMessage(message);
+                messageInput.value = '';
+            }
+        });
+
+        loadMessages();
     </script>
 </body>
 </html>
-
-           
