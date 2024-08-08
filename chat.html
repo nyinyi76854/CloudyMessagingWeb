@@ -135,27 +135,33 @@
             const user = auth.currentUser;
             if (user) {
                 const currentUserEmail = user.email;
+                console.log('Fetching messages for:', currentUserEmail, 'and', emailToInteractWith);
                 const messagesRef = database.ref('messages');
                 messagesRef.orderByChild('sentTime').on('child_added', (snapshot) => {
                     const messageData = snapshot.val();
+                    console.log('Retrieved message:', messageData);
                     if (
                         (messageData.senderEmail === currentUserEmail && messageData.receiverEmail === emailToInteractWith) ||
                         (messageData.senderEmail === emailToInteractWith && messageData.receiverEmail === currentUserEmail)
                     ) {
-                        displayMessage(messageData);
+                        displayMessage(messageData.text, messageData.senderEmail);
                     }
+                }, (error) => {
+                    console.error('Error fetching messages:', error);
                 });
+            } else {
+                console.log('No user logged in');
             }
         }
 
-        function displayMessage(messageData) {
+        function displayMessage(text, senderEmail) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message');
-            messageElement.classList.add(messageData.senderEmail === auth.currentUser.email ? 'sent' : 'received');
+            messageElement.classList.add(senderEmail === auth.currentUser.email ? 'sent' : 'received');
 
             const messageContent = document.createElement('div');
             messageContent.classList.add('message-content');
-            messageContent.textContent = messageData.text;
+            messageContent.textContent = text;  // Ensure 'text' field is used
 
             messageElement.appendChild(messageContent);
             messagesContainer.appendChild(messageElement);
@@ -192,6 +198,9 @@
                         fcmToken = childSnapshot.child('fcmToken').val();
                     });
                     resolve(fcmToken);
+                }, (error) => {
+                    console.error('Error retrieving FCM token:', error);
+                    resolve(null); // Ensure promise always resolves
                 });
             });
         }
