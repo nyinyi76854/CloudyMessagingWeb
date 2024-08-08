@@ -6,7 +6,7 @@
     <title>Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-       body {
+        body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
@@ -31,35 +31,35 @@
             border-radius: 8px 8px 0 0;
         }
         .messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 15px;
-}
-.message {
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 15px;
-    max-width: 75%;
-    word-wrap: break-word;
-    position: relative;
-    display: inline-block;
-    clear: both;
-}
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 15px;
+            max-width: 75%;
+            word-wrap: break-word;
+            position: relative;
+            display: inline-block;
+            clear: both;
+        }
         .sent {
-    background-color: #007bff;
-    color: #fff;
-    margin-left: auto;
-    text-align: right;
-    border-bottom-right-radius: 0;
-    float: right;
-}
+            background-color: #007bff;
+            color: #fff;
+            margin-left: auto;
+            text-align: right;
+            border-bottom-right-radius: 0;
+            float: right;
+        }
         .received {
-    background-color: #e9e9eb;
-    color: #000;
-    text-align: left;
-    border-bottom-left-radius: 0;
-    float: left;
-}
+            background-color: #e9e9eb;
+            color: #000;
+            text-align: left;
+            border-bottom-left-radius: 0;
+            float: left;
+        }
         .input-container {
             display: flex;
             align-items: center;
@@ -194,7 +194,9 @@
             const currentTimeMillis = Date.now();
 
             messaging.getToken().then(senderFCMToken => {
+                console.log('Sender FCM Token:', senderFCMToken);
                 retrieveReceiverFCMToken(emailToInteractWith, receiverFCMToken => {
+                    console.log('Receiver FCM Token:', receiverFCMToken);
                     const messageData = {
                         senderEmail: senderEmail,
                         receiverEmail: emailToInteractWith,
@@ -206,8 +208,16 @@
                     };
 
                     const messageRef = database.ref('messages').push();
-                    messageRef.set(messageData);
+                    messageRef.set(messageData)
+                        .then(() => {
+                            console.log('Message sent successfully:', messageData);
+                        })
+                        .catch(error => {
+                            console.error('Error sending message:', error);
+                        });
                 });
+            }).catch(error => {
+                console.error('Error getting sender FCM token:', error);
             });
         }
 
@@ -224,6 +234,7 @@
                 loadMessages();
             } else {
                 // Handle the case when user is not logged in
+                console.error('User not logged in');
             }
         });
     </script>
