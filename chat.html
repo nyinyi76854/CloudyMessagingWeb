@@ -154,18 +154,24 @@
             const messagesRef = database.ref('messages');
 
             messagesRef.orderByChild('sentTime').on('value', snapshot => {
-                messagesContainer.innerHTML = '';
+                const messages = [];
                 snapshot.forEach(childSnapshot => {
                     const messageData = childSnapshot.val();
                     if ((messageData.senderEmail === currentUserEmail && messageData.receiverEmail === emailToInteractWith) ||
                         (messageData.senderEmail === emailToInteractWith && messageData.receiverEmail === currentUserEmail)) {
-
-                        const messageDiv = document.createElement('div');
-                        messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
-                        messageDiv.textContent = messageData.text;
-                        messagesContainer.appendChild(messageDiv);
-                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                        messages.push(messageData);
                     }
+                });
+
+                messages.sort((a, b) => a.sentTime - b.sentTime);
+
+                messagesContainer.innerHTML = '';
+                messages.forEach(messageData => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
+                    messageDiv.textContent = messageData.text;
+                    messagesContainer.appendChild(messageDiv);
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 });
             });
         }
@@ -203,7 +209,13 @@
             }
         });
 
-        loadMessages();
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                loadMessages();
+            } else {
+                // Handle the case when user is not logged in
+            }
+        });
     </script>
 </body>
 </html>
