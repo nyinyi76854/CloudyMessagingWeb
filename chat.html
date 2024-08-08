@@ -6,7 +6,7 @@
     <title>Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        body {
+       body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
@@ -194,30 +194,41 @@
             const currentTimeMillis = Date.now();
 
             messaging.getToken().then(senderFCMToken => {
-                console.log('Sender FCM Token:', senderFCMToken);
                 retrieveReceiverFCMToken(emailToInteractWith, receiverFCMToken => {
-                    console.log('Receiver FCM Token:', receiverFCMToken);
                     const messageData = {
                         senderEmail: senderEmail,
                         receiverEmail: emailToInteractWith,
                         text: message,
                         sentTime: currentTimeMillis,
-                        senderFCMToken: senderFCMToken,
+                        senderFCMToken: senderFCMToken || '',
                         receiverFCMToken: receiverFCMToken || '',
                         isRead: false
                     };
 
                     const messageRef = database.ref('messages').push();
                     messageRef.set(messageData)
-                        .then(() => {
-                            console.log('Message sent successfully:', messageData);
-                        })
-                        .catch(error => {
-                            console.error('Error sending message:', error);
-                        });
+                        .then(() => console.log("Message sent successfully"))
+                        .catch(error => console.error("Error sending message:", error));
                 });
             }).catch(error => {
-                console.error('Error getting sender FCM token:', error);
+                console.error("Error retrieving sender FCM token:", error);
+                // Send message even if sender FCM token retrieval fails
+                retrieveReceiverFCMToken(emailToInteractWith, receiverFCMToken => {
+                    const messageData = {
+                        senderEmail: senderEmail,
+                        receiverEmail: emailToInteractWith,
+                        text: message,
+                        sentTime: currentTimeMillis,
+                        senderFCMToken: '',
+                        receiverFCMToken: receiverFCMToken || '',
+                        isRead: false
+                    };
+
+                    const messageRef = database.ref('messages').push();
+                    messageRef.set(messageData)
+                        .then(() => console.log("Message sent successfully"))
+                        .catch(error => console.error("Error sending message:", error));
+                });
             });
         }
 
@@ -233,8 +244,7 @@
             if (user) {
                 loadMessages();
             } else {
-                // Handle the case when user is not logged in
-                console.error('User not logged in');
+                console.log("User is not authenticated");
             }
         });
     </script>
