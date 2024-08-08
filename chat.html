@@ -7,76 +7,108 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .header {
-            background-color: #007bff;
-            color: #fff;
-            padding: 15px;
-            font-size: 18px;
-            text-align: center;
-            border-radius: 8px 8px 0 0;
-        }
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-        }
-        .message {
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 15px;
-            max-width: 75%;
-            word-wrap: break-word;
-        }
-        .sent {
-            background-color: #007bff;
-            color: #fff;
-            margin-left: auto;
-            text-align: right;
-        }
-        .received {
-            background-color: #e9e9eb;
-            color: #000;
-            text-align: left;
-        }
-        .input-container {
-            display: flex;
-            align-items: center;
-            border-top: 1px solid #ddd;
-            padding: 10px;
-        }
-        #messageInput {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 25px;
-            margin-right: 10px;
-        }
-        #sendButton {
-            background-color: #007bff;
-            border: none;
-            color: #fff;
-            padding: 10px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        #sendButton:hover {
-            background-color: #0056b3;
-        }
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    max-width: 600px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.header {
+    background-color: #007bff;
+    color: #fff;
+    padding: 15px;
+    font-size: 18px;
+    text-align: center;
+    border-radius: 8px 8px 0 0;
+}
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+.message {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 15px;
+    max-width: 75%;
+    word-wrap: break-word;
+    position: relative;
+    display: inline-block;
+    clear: both;
+}
+.sent {
+    background-color: #007bff;
+    color: #fff;
+    margin-left: auto;
+    text-align: right;
+    border-bottom-right-radius: 0;
+    float: right;
+}
+.sent::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: 0;
+    border-width: 10px 0 10px 10px;
+    border-style: solid;
+    border-color: transparent transparent transparent #007bff;
+}
+.received {
+    background-color: #e9e9eb;
+    color: #000;
+    text-align: left;
+    border-bottom-left-radius: 0;
+    float: left;
+}
+.received::after {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 0;
+    border-width: 10px 10px 10px 0;
+    border-style: solid;
+    border-color: transparent #e9e9eb transparent transparent;
+}
+.input-container {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #ddd;
+    padding: 10px;
+}
+#messageInput {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+#sendButton {
+    background-color: #007bff;
+    border: none;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#sendButton i {
+    font-size: 20px;
+}
+#sendButton:hover {
+    background-color: #0056b3;
+}
+
     </style>
 </head>
 <body>
