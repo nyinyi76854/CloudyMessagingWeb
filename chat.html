@@ -11,9 +11,20 @@
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
             background-color: #e9eff1;
+        }
+        .chat-container {
+            width: 50%;
+            max-width: 800px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         .header {
             background-color: #0078d4;
@@ -26,6 +37,7 @@
             flex: 1;
             overflow-y: auto;
             padding: 10px;
+            border-bottom: 1px solid #ddd;
         }
         .message {
             margin-bottom: 15px;
@@ -73,15 +85,17 @@
     </style>
 </head>
 <body>
-    <div class="header" id="chatHeader">
-        <!-- Email of the user being chatted with will be displayed here -->
-    </div>
-    <div class="messages" id="messagesContainer">
-        <!-- Messages will be dynamically inserted here -->
-    </div>
-    <div class="input-container">
-        <input type="text" id="messageInput" placeholder="Type a message...">
-        <i id="sendButton" class="fas fa-paper-plane"></i>
+    <div class="chat-container">
+        <div class="header" id="chatHeader">
+            <!-- Email of the user being chatted with will be displayed here -->
+        </div>
+        <div class="messages" id="messagesContainer">
+            <!-- Messages will be dynamically inserted here -->
+        </div>
+        <div class="input-container">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <i id="sendButton" class="fas fa-paper-plane"></i>
+        </div>
     </div>
 
     <!-- Firebase JavaScript SDK -->
