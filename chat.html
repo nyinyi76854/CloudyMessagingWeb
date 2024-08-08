@@ -113,7 +113,9 @@
         const sendButton = document.getElementById('sendButton');
 
         const urlParams = new URLSearchParams(window.location.search);
+        console.log("URL Parameters:", urlParams.toString()); // Debugging line
         const emailToInteractWith = urlParams.get('header');
+        console.log("Email to Interact With:", emailToInteractWith); 
         const currentUser = auth.currentUser;
 
         if (currentUser) {
