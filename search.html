@@ -48,23 +48,6 @@
         .name-item:last-child {
             border-bottom: none;
         }
-        .timestamp {
-            color: #888;
-        }
-        #folderButton {
-            margin-top: 20px;
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        #folderButton:hover {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 <body>
@@ -75,7 +58,6 @@
             <div id="emailTextView"></div>
             <img id="profileImageView" class="profile-image" src="" alt="Profile Photo">
         </div>
-        <button id="folderButton">Check Folder</button>
     </div>
 
     <!-- Firebase JavaScript SDK -->
@@ -105,7 +87,6 @@
         const nameTextView = document.getElementById('nameTextView');
         const emailTextView = document.getElementById('emailTextView');
         const profileImageView = document.getElementById('profileImageView');
-        const folderButton = document.getElementById('folderButton');
 
         searchEditText.addEventListener('input', () => {
             performSearch(searchEditText.value);
@@ -120,10 +101,6 @@
             } else {
                 window.location.href = `chat.html?header=${email}`;
             }
-        });
-
-        folderButton.addEventListener('click', () => {
-            checkUserFolderExistence();
         });
 
         function performSearch(searchText) {
@@ -188,59 +165,6 @@
                     resolve(latestPhotoUrl);
                 });
             });
-        }
-
-        function checkUserFolderExistence() {
-            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
-            database.ref('folders').orderByChild('folderCreator').equalTo(currentUserEmail).once('value', (snapshot) => {
-                if (snapshot.exists()) {
-                    showFolderOptionsDialog();
-                } else {
-                    showCreateFolderDialog();
-                }
-            });
-        }
-
-        function showFolderOptionsDialog() {
-            const optionsDialog = confirm("You already have a folder. Would you like to view your folders or create a new one?");
-            if (optionsDialog) {
-                window.location.href = 'folder-loading.html';
-            } else {
-                showCreateFolderDialog();
-            }
-        }
-
-        function showCreateFolderDialog() {
-            const createDialog = confirm("Are you sure that you want to create a folder?");
-            if (createDialog) {
-                showFolderNameInputDialog();
-            }
-        }
-
-        function showFolderNameInputDialog() {
-            const folderName = prompt("Enter the folder name:");
-            if (folderName) {
-                createFolder(folderName);
-            }
-        }
-
-        function createFolder(folderName) {
-            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
-            const folderId = database.ref().child('folders').push().key;
-            const timestamp = Date.now();
-
-            if (currentUserEmail && folderId) {
-                const folderData = {
-                    folderCreator: currentUserEmail,
-                    folderName: folderName,
-                    folderId: folderId,
-                    timestamp: timestamp
-                };
-
-                database.ref('folders/' + folderId).set(folderData)
-                    .then(() => alert('Folder created successfully'))
-                    .catch(() => alert('Failed to create folder'));
-            }
         }
     </script>
 </body>
