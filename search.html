@@ -29,7 +29,8 @@
             margin-bottom: 20px;
         }
         #searchResultLayout {
-            display: none;
+            display: flex;
+            align-items: center;
             margin-top: 20px;
         }
         .profile-image {
@@ -37,6 +38,11 @@
             height: 50px;
             border-radius: 50%;
             object-fit: cover;
+            margin-left: 20px;
+        }
+        .result-info {
+            display: flex;
+            flex-direction: column;
         }
         .name-item {
             display: flex;
@@ -48,14 +54,20 @@
         .name-item:last-child {
             border-bottom: none;
         }
+        .email, .name {
+            margin: 0;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <input type="text" id="searchEditText" placeholder="Search by email">
         <div id="searchResultLayout">
-            <div id="nameTextView"></div>
-            <div id="emailTextView"></div>
+            <div class="result-info">
+                <p id="nameTextView" class="name"></p>
+                <p id="emailTextView" class="email"></p>
+            </div>
             <img id="profileImageView" class="profile-image" src="" alt="Profile Photo">
         </div>
     </div>
@@ -99,7 +111,7 @@
             if (email === currentUserEmail) {
                 window.location.href = 'account.html';
             } else {
-                window.location.href = chat.html?header=${email};
+                window.location.href = `chat.html?header=${email}`;
             }
         });
 
@@ -129,7 +141,7 @@
             if (photoUrl) {
                 profileImageView.src = photoUrl;
             }
-            searchResultLayout.style.display = 'block';
+            searchResultLayout.style.display = 'flex';
         }
 
         function fetchAndDisplayUserName(email) {
