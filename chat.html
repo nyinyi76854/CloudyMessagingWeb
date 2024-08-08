@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -37,8 +38,9 @@
         .message {
             margin-bottom: 10px;
             padding: 10px;
-            border-radius: 10px;
+            border-radius: 15px;
             max-width: 75%;
+            word-wrap: break-word;
         }
         .sent {
             background-color: #007bff;
@@ -49,6 +51,7 @@
         .received {
             background-color: #e9e9eb;
             color: #000;
+            text-align: left;
         }
         .input-container {
             display: flex;
@@ -60,15 +63,15 @@
             flex: 1;
             padding: 10px;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 25px;
             margin-right: 10px;
         }
         #sendButton {
             background-color: #007bff;
             border: none;
             color: #fff;
-            padding: 10px 15px;
-            border-radius: 4px;
+            padding: 10px;
+            border-radius: 50%;
             cursor: pointer;
         }
         #sendButton:hover {
@@ -86,7 +89,7 @@
         </div>
         <div class="input-container">
             <input type="text" id="messageInput" placeholder="Type a message...">
-            <button id="sendButton">Send</button>
+            <button id="sendButton"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
