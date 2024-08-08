@@ -104,7 +104,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
     <script>
         // Firebase configuration
         const firebaseConfig = {
@@ -122,7 +121,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
-        const messaging = firebase.messaging();
+       
 
         const queryParams = new URLSearchParams(window.location.search);
         const emailToInteractWith = queryParams.get('header');
@@ -133,28 +132,7 @@
 
         header.textContent = emailToInteractWith;
 
-        function retrieveReceiverFCMToken(emailToInteractWith, callback) {
-            const userRef = firebase.database().ref('users')
-                .orderByChild('email')
-                .equalTo(emailToInteractWith);
-            
-            userRef.once('value')
-                .then(snapshot => {
-                    if (snapshot.exists()) {
-                        snapshot.forEach(userSnapshot => {
-                            const receiverFCMToken = userSnapshot.child('fcmToken').val();
-                            callback(receiverFCMToken);
-                            return true; // Exit the loop early
-                        });
-                    } else {
-                        callback(null);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error retrieving FCM token:', error);
-                    callback(null);
-                });
-        }
+        
 
         function loadMessages() {
             const currentUser = auth.currentUser;
@@ -186,51 +164,29 @@
             });
         }
 
-        function sendMessage(message) {
-            const currentUser = auth.currentUser;
-            if (!currentUser) return;
+      function sendMessage(message) {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
 
-            const senderEmail = currentUser.email;
-            const currentTimeMillis = Date.now();
+    const senderEmail = currentUser.email;
+    const currentTimeMillis = Date.now();
 
-            messaging.getToken().then(senderFCMToken => {
-                retrieveReceiverFCMToken(emailToInteractWith, receiverFCMToken => {
-                    const messageData = {
-                        senderEmail: senderEmail,
-                        receiverEmail: emailToInteractWith,
-                        text: message,
-                        sentTime: currentTimeMillis,
-                        senderFCMToken: senderFCMToken || '',
-                        receiverFCMToken: receiverFCMToken || '',
-                        isRead: false
-                    };
+    // Create message data without FCM tokens
+    const messageData = {
+        senderEmail: senderEmail,
+        receiverEmail: emailToInteractWith,
+        text: message,
+        sentTime: currentTimeMillis,
+        isRead: false
+    };
 
-                    const messageRef = database.ref('messages').push();
-                    messageRef.set(messageData)
-                        .then(() => console.log("Message sent successfully"))
-                        .catch(error => console.error("Error sending message:", error));
-                });
-            }).catch(error => {
-                console.error("Error retrieving sender FCM token:", error);
-                // Send message even if sender FCM token retrieval fails
-                retrieveReceiverFCMToken(emailToInteractWith, receiverFCMToken => {
-                    const messageData = {
-                        senderEmail: senderEmail,
-                        receiverEmail: emailToInteractWith,
-                        text: message,
-                        sentTime: currentTimeMillis,
-                        senderFCMToken: '',
-                        receiverFCMToken: receiverFCMToken || '',
-                        isRead: false
-                    };
+    // Push the message data to the Firebase Database
+    const messageRef = database.ref('messages').push();
+    messageRef.set(messageData)
+        .then(() => console.log("Message sent successfully"))
+        .catch(error => console.error("Error sending message:", error));
+}
 
-                    const messageRef = database.ref('messages').push();
-                    messageRef.set(messageData)
-                        .then(() => console.log("Message sent successfully"))
-                        .catch(error => console.error("Error sending message:", error));
-                });
-            });
-        }
 
         sendButton.addEventListener('click', () => {
             const message = messageInput.value.trim();
