@@ -66,10 +66,12 @@
             border-top: 1px solid #ddd;
             padding: 10px;
         }
-        .header-photo {
+       
+.profile-photo {
     width: 40px;
     height: 40px;
     border-radius: 50%;
+    object-fit: cover;
     margin-right: 10px;
     vertical-align: middle;
 }
@@ -110,10 +112,11 @@
 </head>
 <body>
     <div class="container">
-        <div class="header" id="header">
-            <img id="headerProfilePhoto" class="header-photo" src="user_1077114.png" alt="Profile Photo">
-            <!-- Email will be set dynamically -->
-        </div>
+<div class="header" id="header">
+    <img id="headerProfilePhotoImageView" src="user_1077114.png" alt="Profile Photo" class="profile-photo">
+    <span id="headerEmail"></span>
+</div>
+
         <div class="messages" id="messages">
             <!-- Messages will be displayed here -->
         </div>
@@ -147,14 +150,13 @@
 
         const queryParams = new URLSearchParams(window.location.search);
         const emailToInteractWith = queryParams.get('header');
-        const header = document.getElementById('header');
+      document.getElementById('headerEmail').textContent = emailToInteractWith;
+        loadHeaderProfilePhoto(emailToInteractWith);
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
 
-        header.textContent = emailToInteractWith;
-
-loadHeaderProfilePhoto(emailToInteractWith);
+       
         function loadMessages() {
             const currentUser = auth.currentUser;
             if (!currentUser) return;
@@ -226,15 +228,17 @@ function loadHeaderProfilePhoto(headerEmail) {
             }
         });
 
-        const headerProfilePhotoImageView = document.getElementById('headerProfilePhoto');
-        if (latestPhotoUrl) {
+        if (latestPhotoUrl !== null) {
+            const headerProfilePhotoImageView = document.getElementById('headerProfilePhotoImageView');
             headerProfilePhotoImageView.src = latestPhotoUrl;
-        } else {
-            headerProfilePhotoImageView.src = 'user_1077114.jpg';
+            headerProfilePhotoImageView.onerror = function() {
+                headerProfilePhotoImageView.src = 'user_1077114.png';
+            };
         }
+    }, function(error) {
+        console.error('Error loading profile photo:', error);
     });
 }
-
         function sendMessage(message) {
             const currentUser = auth.currentUser;
             if (!currentUser) return;
