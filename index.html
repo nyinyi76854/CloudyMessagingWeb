@@ -15,16 +15,24 @@
             margin: 0;
         }
         .container {
+            background: #fff;
+            padding: 20px 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
             text-align: center;
+            max-width: 400px;
+            width: 100%;
         }
         button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
+            width: 100%;
+            padding: 10px;
+            margin: 20px 0;
             border: none;
             border-radius: 4px;
-            cursor: pointer;
+            background-color: #007bff;
+            color: white;
             font-size: 16px;
+            cursor: pointer;
         }
         button:hover {
             background-color: #0056b3;
@@ -33,15 +41,14 @@
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to ChatFlow</h1>
+        <h2>Welcome to ChatFlow</h2>
+        <p>Click the button below to start messaging!</p>
         <button id="start-messaging">Start Messaging</button>
     </div>
 
     <!-- Firebase JavaScript SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
 
     <script>
         // Your web app's Firebase configuration
@@ -59,49 +66,19 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const messaging = firebase.messaging();
-        const database = firebase.database();
 
-        // Function to save FCM token to the Firebase Realtime Database
-        function saveTokenToDatabase(uid, token) {
-            database.ref('users/' + uid + '/fcmToken').set(token)
-                .then(() => {
-                    console.log('FCM Token saved to database.');
-                })
-                .catch((error) => {
-                    console.error('Error saving FCM Token:', error);
-                });
-        }
-
-        // Request permission to receive notifications and get the FCM token
-        function getAndSaveFCMToken(user) {
-            messaging.requestPermission()
-                .then(() => {
-                    console.log('Notification permission granted.');
-                    return messaging.getToken();
-                })
-                .then((token) => {
-                    console.log('FCM Token:', token);
-                    // Save the token to the database with the user's ID
-                    saveTokenToDatabase(user.uid, token);
-                    // Redirect to chat list
-                    window.location.href = 'chatlist.html';
-                })
-                .catch((err) => {
-                    console.log('Unable to get permission to notify.', err);
-                });
-        }
-
-        // Handle "Start Messaging" button click
+        // Handle button click
         document.getElementById('start-messaging').addEventListener('click', function() {
-            const user = auth.currentUser;
-            if (user) {
-                // User is signed in, get and save FCM token, then redirect
-                getAndSaveFCMToken(user);
-            } else {
-                // No user is signed in, redirect to sign-in page
-                window.location.href = 'signin.html';
-            }
+            // Check if the user is authenticated
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // User is signed in, redirect to chatlist.html
+                    window.location.href = 'chatlist.html';
+                } else {
+                    // No user is signed in, redirect to signin.html
+                    window.location.href = 'signin.html';
+                }
+            });
         });
     </script>
 </body>
