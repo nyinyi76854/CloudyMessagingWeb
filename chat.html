@@ -60,19 +60,6 @@
             border-bottom-left-radius: 0;
             float: left;
         }
-        .message img {
-            max-width: 100%;
-            border-radius: 8px;
-        }
-        .message video {
-            max-width: 100%;
-            border-radius: 8px;
-        }
-        .message a {
-            color: #007bff;
-            text-decoration: underline;
-            cursor: pointer;
-        }
         .input-container {
             display: flex;
             align-items: center;
@@ -96,6 +83,20 @@
         }
         #sendButton:hover {
             background-color: #0056b3;
+        }
+        .file-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+        .pdf-preview {
+            background: url('https://img.icons8.com/material-outlined/24/000000/pdf.png') no-repeat center center;
+            background-size: contain;
+        }
+        .text-file-preview {
+            background: url('https://img.icons8.com/material-outlined/24/000000/txt.png') no-repeat center center;
+            background-size: contain;
         }
     </style>
 </head>
@@ -134,7 +135,6 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
-       
 
         const queryParams = new URLSearchParams(window.location.search);
         const emailToInteractWith = queryParams.get('header');
@@ -144,88 +144,8 @@
         const sendButton = document.getElementById('sendButton');
 
         header.textContent = emailToInteractWith;
- // Function to determine message type
-        function getMessageType(messageText) {
-            if (isImageUrl(messageText)) {
-                return 'image';
-            } else if (isVideoUrl(messageText)) {
-                return 'video';
-            } else if (isPdfFileUrl(messageText)) {
-                return 'pdf';
-            } else if (isTextFile(messageText)) {
-                return 'textfile';
-            } else {
-                return 'text';
-            }
-        }
 
-        // Check if the message is an image URL
-        function isImageUrl(text) {
-            return text.startsWith("https://firebasestorage.googleapis.com") &&
-                   (text.includes("/sentphotos%2F") || text.includes("/sentvideos%2F"));
-        }
-
-        // Check if the message is a video URL
-        function isVideoUrl(text) {
-            return text.startsWith("https://firebasestorage.googleapis.com") &&
-                   text.includes("/sentvideos%2F");
-        }
-
-        // Check if the message is a PDF file URL
-        function isPdfFileUrl(text) {
-            return text.startsWith("https://firebasestorage.googleapis.com") &&
-                   text.includes("/pdffile%2F");
-        }
-
-        // Check if the message is a text file URL
-        function isTextFile(text) {
-            return text.startsWith("https://firebasestorage.googleapis.com") &&
-                   text.includes("/txtfile%2F");
-        }
-
-        // Function to render messages
-        function renderMessage(messageData) {
-            const messageType = getMessageType(messageData.text);
-            const messageDiv = document.createElement('div');
-            messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
-
-            switch (messageType) {
-                case 'image':
-                    const imageElement = document.createElement('img');
-                    imageElement.src = messageData.text;
-                    messageDiv.appendChild(imageElement);
-                    break;
-                case 'video':
-                    const videoElement = document.createElement('video');
-                    videoElement.controls = true;
-                    const sourceElement = document.createElement('source');
-                    sourceElement.src = messageData.text;
-                    videoElement.appendChild(sourceElement);
-                    messageDiv.appendChild(videoElement);
-                    break;
-                case 'pdf':
-                    const pdfLink = document.createElement('a');
-                    pdfLink.href = messageData.text;
-                    pdfLink.textContent = 'View PDF File';
-                    messageDiv.appendChild(pdfLink);
-                    break;
-                case 'textfile':
-                    const textFileLink = document.createElement('a');
-                    textFileLink.href = messageData.text;
-                    textFileLink.textContent = 'View Text File';
-                    messageDiv.appendChild(textFileLink);
-                    break;
-                default:
-                    messageDiv.textContent = messageData.text;
-            }
-
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        
-
-       function loadMessages() {
+        function loadMessages() {
             const currentUser = auth.currentUser;
             if (!currentUser) return;
 
@@ -246,35 +166,78 @@
 
                 messagesContainer.innerHTML = '';
                 messages.forEach(messageData => {
-                    renderMessage(messageData);
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
+                    
+                    if (isPdfFileUrl(messageData.text)) {
+                        const preview = document.createElement('div');
+                        preview.className = 'file-preview pdf-preview';
+                        messageDiv.appendChild(preview);
+                    } else if (isVideoUrl(messageData.text)) {
+                        const videoElement = document.createElement('video');
+                        videoElement.src = messageData.text;
+                        videoElement.controls = true;
+                        videoElement.className = 'file-preview';
+                        messageDiv.appendChild(videoElement);
+                    } else if (isImageUrl(messageData.text)) {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = messageData.text;
+                        imgElement.className = 'file-preview';
+                        messageDiv.appendChild(imgElement);
+                    } else if (isTextFile(messageData.text)) {
+                        const preview = document.createElement('div');
+                        preview.className = 'file-preview text-file-preview';
+                        messageDiv.appendChild(preview);
+                    } else {
+                        messageDiv.textContent = messageData.text;
+                    }
+                    
+                    messagesContainer.appendChild(messageDiv);
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 });
             });
         }
 
+        function sendMessage(message) {
+            const currentUser = auth.currentUser;
+            if (!currentUser) return;
 
-      function sendMessage(message) {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
+            const senderEmail = currentUser.email;
+            const currentTimeMillis = Date.now();
 
-    const senderEmail = currentUser.email;
-    const currentTimeMillis = Date.now();
+            const messageData = {
+                senderEmail: senderEmail,
+                receiverEmail: emailToInteractWith,
+                text: message,
+                sentTime: currentTimeMillis,
+                isRead: false
+            };
 
-    // Create message data without FCM tokens
-    const messageData = {
-        senderEmail: senderEmail,
-        receiverEmail: emailToInteractWith,
-        text: message,
-        sentTime: currentTimeMillis,
-        isRead: false
-    };
+            const messageRef = database.ref('messages').push();
+            messageRef.set(messageData)
+                .then(() => console.log("Message sent successfully"))
+                .catch(error => console.error("Error sending message:", error));
+        }
 
-    // Push the message data to the Firebase Database
-    const messageRef = database.ref('messages').push();
-    messageRef.set(messageData)
-        .then(() => console.log("Message sent successfully"))
-        .catch(error => console.error("Error sending message:", error));
-}
+        function isPdfFileUrl(text) {
+            return text.startsWith("https://firebasestorage.googleapis.com") &&
+                   text.includes("/pdffile%2F");
+        }
 
+        function isVideoUrl(text) {
+            return text.startsWith("https://firebasestorage.googleapis.com") &&
+                   text.includes("/sentvideos%2F");
+        }
+
+        function isImageUrl(text) {
+            return text.startsWith("https://firebasestorage.googleapis.com") &&
+                   (text.includes("/sentphotos%2F") || text.includes("/sentvideos%2F"));
+        }
+
+        function isTextFile(text) {
+            return text.startsWith("https://firebasestorage.googleapis.com") &&
+                   text.includes("/txtfile%2F");
+        }
 
         sendButton.addEventListener('click', () => {
             const message = messageInput.value.trim();
