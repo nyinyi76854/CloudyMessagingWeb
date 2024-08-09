@@ -60,6 +60,19 @@
             border-bottom-left-radius: 0;
             float: left;
         }
+        .message img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        .message video {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        .message a {
+            color: #007bff;
+            text-decoration: underline;
+            cursor: pointer;
+        }
         .input-container {
             display: flex;
             align-items: center;
@@ -131,10 +144,88 @@
         const sendButton = document.getElementById('sendButton');
 
         header.textContent = emailToInteractWith;
+ // Function to determine message type
+        function getMessageType(messageText) {
+            if (isImageUrl(messageText)) {
+                return 'image';
+            } else if (isVideoUrl(messageText)) {
+                return 'video';
+            } else if (isPdfFileUrl(messageText)) {
+                return 'pdf';
+            } else if (isTextFile(messageText)) {
+                return 'textfile';
+            } else {
+                return 'text';
+            }
+        }
+
+        // Check if the message is an image URL
+        function isImageUrl(text) {
+            return text.startsWith("https://firebasestorage.googleapis.com") &&
+                   (text.includes("/sentphotos%2F") || text.includes("/sentvideos%2F"));
+        }
+
+        // Check if the message is a video URL
+        function isVideoUrl(text) {
+            return text.startsWith("https://firebasestorage.googleapis.com") &&
+                   text.includes("/sentvideos%2F");
+        }
+
+        // Check if the message is a PDF file URL
+        function isPdfFileUrl(text) {
+            return text.startsWith("https://firebasestorage.googleapis.com") &&
+                   text.includes("/pdffile%2F");
+        }
+
+        // Check if the message is a text file URL
+        function isTextFile(text) {
+            return text.startsWith("https://firebasestorage.googleapis.com") &&
+                   text.includes("/txtfile%2F");
+        }
+
+        // Function to render messages
+        function renderMessage(messageData) {
+            const messageType = getMessageType(messageData.text);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
+
+            switch (messageType) {
+                case 'image':
+                    const imageElement = document.createElement('img');
+                    imageElement.src = messageData.text;
+                    messageDiv.appendChild(imageElement);
+                    break;
+                case 'video':
+                    const videoElement = document.createElement('video');
+                    videoElement.controls = true;
+                    const sourceElement = document.createElement('source');
+                    sourceElement.src = messageData.text;
+                    videoElement.appendChild(sourceElement);
+                    messageDiv.appendChild(videoElement);
+                    break;
+                case 'pdf':
+                    const pdfLink = document.createElement('a');
+                    pdfLink.href = messageData.text;
+                    pdfLink.textContent = 'View PDF File';
+                    messageDiv.appendChild(pdfLink);
+                    break;
+                case 'textfile':
+                    const textFileLink = document.createElement('a');
+                    textFileLink.href = messageData.text;
+                    textFileLink.textContent = 'View Text File';
+                    messageDiv.appendChild(textFileLink);
+                    break;
+                default:
+                    messageDiv.textContent = messageData.text;
+            }
+
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
 
         
 
-        function loadMessages() {
+       function loadMessages() {
             const currentUser = auth.currentUser;
             if (!currentUser) return;
 
@@ -155,14 +246,11 @@
 
                 messagesContainer.innerHTML = '';
                 messages.forEach(messageData => {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
-                    messageDiv.textContent = messageData.text;
-                    messagesContainer.appendChild(messageDiv);
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    renderMessage(messageData);
                 });
             });
         }
+
 
       function sendMessage(message) {
     const currentUser = auth.currentUser;
