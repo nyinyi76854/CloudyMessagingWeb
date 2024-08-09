@@ -66,6 +66,14 @@
             border-top: 1px solid #ddd;
             padding: 10px;
         }
+        .header-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
         #messageInput {
             flex: 1;
             padding: 10px;
@@ -103,6 +111,7 @@
 <body>
     <div class="container">
         <div class="header" id="header">
+            <img id="headerProfilePhoto" class="header-photo" src="user_1077114.png" alt="Profile Photo">
             <!-- Email will be set dynamically -->
         </div>
         <div class="messages" id="messages">
@@ -145,6 +154,7 @@
 
         header.textContent = emailToInteractWith;
 
+loadHeaderProfilePhoto(emailToInteractWith);
         function loadMessages() {
             const currentUser = auth.currentUser;
             if (!currentUser) return;
@@ -197,6 +207,33 @@
                 });
             });
         }
+function loadHeaderProfilePhoto(headerEmail) {
+    const profilesPhotoRef = firebase.database().ref('profilesphoto');
+    let latestPhotoUrl = null;
+    let latestTimestamp = 0;
+
+    profilesPhotoRef.once('value', function(snapshot) {
+        snapshot.forEach(function(childSnapshot) {
+            const uploaderEmail = childSnapshot.child('uploaderEmail').val();
+            const timestamp = childSnapshot.child('timestamp').val();
+            const photoUrl = childSnapshot.child('downloadUrl').val();
+
+            if (uploaderEmail === headerEmail && timestamp !== null) {
+                if (timestamp > latestTimestamp) {
+                    latestTimestamp = timestamp;
+                    latestPhotoUrl = photoUrl;
+                }
+            }
+        });
+
+        const headerProfilePhotoImageView = document.getElementById('headerProfilePhoto');
+        if (latestPhotoUrl) {
+            headerProfilePhotoImageView.src = latestPhotoUrl;
+        } else {
+            headerProfilePhotoImageView.src = 'user_1077114.jpg';
+        }
+    });
+}
 
         function sendMessage(message) {
             const currentUser = auth.currentUser;
