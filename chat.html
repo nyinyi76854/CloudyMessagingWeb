@@ -152,6 +152,7 @@
         const emailToInteractWith = queryParams.get('header');
       document.getElementById('headerEmail').textContent = emailToInteractWith;
         loadHeaderProfilePhoto(emailToInteractWith);
+        loadUserNameForEmail(emailToInteractWith);
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
@@ -209,6 +210,33 @@
                 });
             });
         }
+        function loadUserNameForEmail(email) {
+    const namesRef = firebase.database().ref('names');
+    namesRef.orderByChild('email').equalTo(email).once('value')
+        .then(snapshot => {
+            let lastTimestamp = 0;
+            let userName = null;
+
+            snapshot.forEach(childSnapshot => {
+                const timestamp = childSnapshot.child('timestamp').val();
+                const name = childSnapshot.child('name').val();
+
+                if (timestamp !== null && timestamp > lastTimestamp && name && name.trim() !== '') {
+                    lastTimestamp = timestamp;
+                    userName = name;
+                }
+            });
+
+            const headerEmailElement = document.getElementById('headerEmail');
+            if (userName) {
+                headerEmailElement.textContent = userName;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading user name:', error);
+        });
+}
+
 function loadHeaderProfilePhoto(headerEmail) {
     const profilesPhotoRef = firebase.database().ref('profilesphoto');
     let latestPhotoUrl = null;
