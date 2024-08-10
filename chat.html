@@ -133,6 +133,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
     <script>
         // Firebase configuration
         const firebaseConfig = {
@@ -160,32 +161,43 @@
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
        const fileInput = document.getElementById('fileInput');
+function uploadPhoto(file) {
+        const photoId = uuid.v4(); // Generate a UUID
+        const storageRef = storage.ref(`sentphotos/${photoId}.jpg`);
+        const uploadTask = storageRef.put(file);
 
-    // Function to handle file selection and upload
-    function handleFileUpload(file) {
-        const storageRef = firebase.storage().ref();
-        const fileRef = storageRef.child('sentphotos/' + file.name);
-
-        // Upload the file
-        fileRef.put(file).then(snapshot => {
-            console.log('File uploaded successfully');
-            return snapshot.ref.getDownloadURL();
-        }).then(downloadURL => {
-            console.log('File available at', downloadURL);
-            sendMessage(downloadURL); // Send the URL as a message
-        }).catch(error => {
-            console.error('Error uploading file:', error);
+        uploadTask.on('state_changed', snapshot => {
+            // Handle progress, pause, and resume states
+        }, error => {
+            console.error("Error uploading photo:", error);
+        }, () => {
+            uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
+                sendMessage(downloadURL);
+            }).catch(error => {
+                console.error("Error getting download URL:", error);
+            });
         });
     }
 
-    // Event listener for file input change
-    fileInput.addEventListener('change', event => {
+    // Function to handle file selection
+    function handleFileSelect(event) {
         const file = event.target.files[0];
-        if (file) {
-            handleFileUpload(file);
+        if (file && file.type.startsWith('image/')) {
+            uploadPhoto(file);
+        } else {
+            alert('Please select a valid image file.');
         }
-    });
+    }
 
+    // Set up file input change event listener
+    fileInput.addEventListener('change', handleFileSelect);
+
+    // Function to open file picker
+    function openFilePicker() {
+        fileInput.click();
+    }
+
+  
 // Function to update button icon based on input
 function updateButtonIcon() {
     const message = messageInput.value.trim();
@@ -353,11 +365,12 @@ function loadHeaderProfilePhoto(headerEmail) {
         }
 
        sendButton.addEventListener('click', () => {
-        if (messageInput.value.trim()) {
-            sendMessage(messageInput.value.trim());
+        const message = messageInput.value.trim();
+        if (message) {
+            sendMessage(message);
             messageInput.value = '';
         } else {
-            fileInput.click(); // Trigger file input when folder icon is clicked
+            openFilePicker();
         }
     });
 
