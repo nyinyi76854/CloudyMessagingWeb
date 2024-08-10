@@ -123,6 +123,8 @@
         <div class="input-container">
             <input type="text" id="messageInput" placeholder="Type a message...">
             <button id="sendButton"><i class="fas fa-folder"></i></button>
+            <input type="file" id="fileInput" style="display: none;" multiple>
+
         </div>
     </div>
 
@@ -155,6 +157,7 @@
         loadUserNameForEmail(emailToInteractWith);
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
+        const fileInput = document.getElementById('fileInput');
         const sendButton = document.getElementById('sendButton');
         
 // Function to update button icon based on input
@@ -169,6 +172,44 @@ function updateButtonIcon() {
 
 // Add event listener for input changes
 messageInput.addEventListener('input', updateButtonIcon);
+fileInput.addEventListener('change', handleFileSelect);
+
+function handleFileSelect(event) {
+    const files = event.target.files;
+    for (const file of files) {
+        handleFileUpload(file);
+    }
+}
+
+// Handle file upload
+function handleFileUpload(file) {
+    const storageRef = firebase.storage().ref();
+    const fileName = file.name;
+    let folderPath = '';
+
+    if (file.type.startsWith('video/')) {
+        folderPath = 'sentvideos/';
+    } else if (file.type.startsWith('image/')) {
+        folderPath = 'sentphotos/';
+    } else if (file.type === 'application/pdf') {
+        folderPath = 'pdffile/';
+    } else if (file.type === 'text/plain') {
+        folderPath = 'txtfile/';
+    } else {
+        console.error('Unsupported file type');
+        return;
+    }
+
+    const fileRef = storageRef.child(`${folderPath}${fileName}`);
+    fileRef.put(file).then(snapshot => {
+        return snapshot.ref.getDownloadURL();
+    }).then(downloadURL => {
+        sendMessage(downloadURL); // Send URL as a message
+    }).catch(error => {
+        console.error('Error uploading file:', error);
+    });
+}
+
 
        
         function loadMessages() {
@@ -323,13 +364,16 @@ function loadHeaderProfilePhoto(headerEmail) {
                    text.includes("/txtfile%2F");
         }
 
-     sendButton.addEventListener('click', () => {
-            const message = messageInput.value.trim();
-            if (message) {
-                sendMessage(message);
-                messageInput.value = '';
-            }
-        });
+    sendButton.addEventListener('click', () => {
+    const message = messageInput.value.trim();
+    if (message) {
+        sendMessage(message);
+        messageInput.value = '';
+    } else {
+        fileInput.click();
+    }
+});
+
 
         auth.onAuthStateChanged(user => {
             if (user) {
