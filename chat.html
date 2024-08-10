@@ -340,34 +340,45 @@ function loadHeaderProfilePhoto(headerEmail) {
 fileInput.addEventListener('change', (event) => {
     const file = event.target.files[0];
     if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const fileContent = e.target.result;
-            uploadAndSendFile(file, fileContent);
-        };
-        reader.readAsDataURL(file); // Read file as Data URL
+        readFileAndUpload(file);
     }
 });
 
-function uploadAndSendFile(file, fileContent) {
+function readFileAndUpload(file) {
+    const reader = new FileReader();
+    
+    reader.onload = function(event) {
+        const fileDataUrl = event.target.result;
+        const fileType = file.type;
+        
+        if (fileType.startsWith('image/')) {
+            uploadFileToFirebase(fileDataUrl, file.name, 'sentphotos');
+        } else if (fileType.startsWith('video/')) {
+            uploadFileToFirebase(fileDataUrl, file.name, 'sentvideos');
+        } else if (fileType === 'application/pdf') {
+            uploadFileToFirebase(fileDataUrl, file.name, 'pdffile');
+        } else if (fileType === 'text/plain') {
+            uploadFileToFirebase(fileDataUrl, file.name, 'txtfile');
+        } else {
+            console.error('Unsupported file type:', fileType);
+        }
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+function uploadFileToFirebase(fileDataUrl, fileName, folder) {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
     const storageRef = firebase.storage().ref();
-    const fileRef = storageRef.child(`sentfiles/${Date.now()}_${file.name}`);
+    const fileRef = storageRef.child(`${folder}/${Date.now()}_${fileName}`);
 
-    // Upload the file to Firebase Storage
-    fileRef.putString(fileContent, 'data_url').then((snapshot) => {
-        // Get the download URL
+    fileRef.putString(fileDataUrl, 'data_url').then((snapshot) => {
         snapshot.ref.getDownloadURL().then((downloadURL) => {
-            // Send the file URL as a message
             sendMessage(downloadURL);
-        }).catch((error) => {
-            console.error('Error getting download URL:', error);
-        });
-    }).catch((error) => {
-        console.error('Error uploading file:', error);
-    });
+        }).catch(error => console.error('Error getting download URL:', error));
+    }).catch(error => console.error('Error uploading file:', error));
 }
 
         auth.onAuthStateChanged(user => {
