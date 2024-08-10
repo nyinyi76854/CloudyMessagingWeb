@@ -323,58 +323,13 @@ function loadHeaderProfilePhoto(headerEmail) {
                    text.includes("/txtfile%2F");
         }
 
-    sendButton.addEventListener('click', () => {
-    const message = messageInput.value.trim();
-    if (message) {
-        sendMessage(message);
-        messageInput.value = '';
-    } else {
-        // Create a file input element to select a photo
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*';
-        fileInput.style.display = 'none'; // Hide the file input element
-
-        // Listen for file selection
-        fileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                uploadPhotoAndSendMessage(file);
+     sendButton.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (message) {
+                sendMessage(message);
+                messageInput.value = '';
             }
         });
-
-        // Trigger the file input click event to open the device's photo gallery
-        fileInput.click();
-    }
-});
-function uploadPhotoAndSendMessage(file) {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
-    const storageRef = firebase.storage().ref();
-    const photoRef = storageRef.child(`sentphotos/${Date.now()}_${file.name}`);
-
-    // Upload the selected photo
-    const uploadTask = photoRef.put(file);
-
-    uploadTask.on('state_changed', 
-        (snapshot) => {
-            // You can add progress indicators here if needed
-        }, 
-        (error) => {
-            console.error("Error uploading photo:", error);
-        }, 
-        () => {
-            // Get the download URL and send it as a message
-            uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                sendMessage(downloadURL);
-            }).catch((error) => {
-                console.error("Error getting download URL:", error);
-            });
-        }
-    );
-}
-
 
         auth.onAuthStateChanged(user => {
             if (user) {
