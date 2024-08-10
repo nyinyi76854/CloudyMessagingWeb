@@ -123,6 +123,7 @@
         <div class="input-container">
             <input type="text" id="messageInput" placeholder="Type a message...">
             <button id="sendButton"><i class="fas fa-folder"></i></button>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
         </div>
     </div>
 
@@ -156,7 +157,7 @@
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
-        
+        const fileInput = document.getElementById('fileInput');
 // Function to update button icon based on input
 function updateButtonIcon() {
     const message = messageInput.value.trim();
@@ -324,10 +325,30 @@ function loadHeaderProfilePhoto(headerEmail) {
         }
 
      sendButton.addEventListener('click', () => {
-            const message = messageInput.value.trim();
-            if (message) {
-                sendMessage(message);
+            if (!messageInput.value.trim()) {
+                fileInput.click();
+            } else {
+                sendMessage(messageInput.value.trim());
                 messageInput.value = '';
+            }
+        });
+
+        // Handle file selection
+        fileInput.addEventListener('change', async () => {
+            const file = fileInput.files[0];
+            if (file) {
+                const storageRef = firebase.storage().ref();
+                const fileRef = storageRef.child(`sentphotos/${Date.now()}_${file.name}`);
+                try {
+                    // Upload the file
+                    await fileRef.put(file);
+                    // Get the file's download URL
+                    const downloadUrl = await fileRef.getDownloadURL();
+                    // Send the URL as a message
+                    sendMessage(downloadUrl);
+                } catch (error) {
+                    console.error("Error uploading file:", error);
+                }
             }
         });
 
