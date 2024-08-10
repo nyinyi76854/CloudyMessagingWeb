@@ -122,18 +122,8 @@
         </div>
         <div class="input-container">
             <input type="text" id="messageInput" placeholder="Type a message...">
-            <button id="sendButton"><i id="sendButtonIcon" class="fas fa-paper-plane"></i></button>
-
+            <button id="sendButton"><i class="fas fa-paper-plane"></i></button>
         </div>
-        <input type="file" id="filePicker" style="display: none;">
-<div id="videoDialog" style="display: none;">
-    <img id="thumbnailImageView" src="" alt="Thumbnail">
-    <input type="text" id="descriptionInputField" placeholder="Add a description...">
-    <button id="playButton">Play</button>
-    <button id="cancelButton">Cancel</button>
-    <button id="sendButton">Send</button>
-</div>
-
     </div>
 
     <!-- Firebase JavaScript SDK -->
@@ -166,150 +156,8 @@
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
-const filePicker = document.getElementById('filePicker');
-const videoDialog = document.getElementById('videoDialog');
-const thumbnailImageView = document.getElementById('thumbnailImageView');
-const descriptionInputField = document.getElementById('descriptionInputField');
-const cancelButton = document.getElementById('cancelButton');
-const playButton = document.getElementById('playButton');
 
-filePicker.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    const mimeType = file.type;
-
-    if (mimeType.includes("image") || mimeType.includes("video")) {
-        uploadPhoto(file); // Upload photo or video
-    } else if (mimeType.includes("pdf")) {
-        uploadPDF(file); // Upload PDF file
-    } else if (mimeType.includes("text")) {
-        uploadTextFile(file); // Upload text file
-    } else if (mimeType.includes("audio")) {
-        uploadAudio(file); // Upload audio file
-    } else {
-        // Handle other types
-    }
-});
-
-function uploadPhoto(file) {
-    const mimeType = file.type;
-    if (mimeType.includes("video")) {
-        showVideoDialog(file);
-    } else {
-        const storageRef = firebase.storage().ref(`sentphotos/${file.name}`);
-        const uploadTask = storageRef.put(file);
-
-        uploadTask.on('state_changed', {
-            // Optional: Add progress handling here
-        }, (error) => {
-            console.error("Photo upload failed: ", error);
-        }, () => {
-            uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                sendMessage(downloadURL);
-            });
-        });
-    }
-}
-
-function showVideoDialog(file) {
-    const url = URL.createObjectURL(file);
-    const retriever = document.createElement('video');
-    retriever.src = url;
-    retriever.onloadedmetadata = function () {
-        const canvas = document.createElement('canvas');
-        canvas.width = retriever.videoWidth;
-        canvas.height = retriever.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(retriever, 0, 0, canvas.width, canvas.height);
-        thumbnailImageView.src = canvas.toDataURL();
-    };
-
-    cancelButton.onclick = () => {
-        videoDialog.style.display = 'none';
-    };
-
-    sendButton.onclick = () => {
-        const description = descriptionInputField.value.trim();
-        videoDialog.style.display = 'none';
-        uploadVideoAndSendMessage(file, description);
-    };
-
-    playButton.onclick = () => {
-        retriever.play();
-    };
-
-    videoDialog.style.display = 'block';
-}
-
-function uploadVideoAndSendMessage(file, description) {
-    const videoRef = firebase.storage().ref(`sentvideos/${file.name}`);
-    const uploadTask = videoRef.put(file);
-
-    uploadTask.on('state_changed', {
-        // Optional: Add progress handling here
-    }, (error) => {
-        console.error("Video upload failed: ", error);
-    }, () => {
-        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-            sendMessage(downloadURL);
-            if (description) {
-                saveMessageDetails(downloadURL, description);
-            }
-        });
-    });
-}
-
-function saveMessageDetails(videoUrl, description) {
-    const senderEmail = firebase.auth().currentUser.email;
-    const receiverEmail = 'receiver@example.com'; // Replace with your logic
-    const timestamp = Date.now();
-    const messageDetails = {
-        senderEmail,
-        receiverEmail,
-        timestamp,
-        videoUrl,
-        description
-    };
-
-    const databaseRef = firebase.database().ref("messagethatcontainsdescription");
-    databaseRef.push(messageDetails);
-}
-
-function uploadPDF(file) {
-    const pdfRef = firebase.storage().ref(`pdffile/${file.name}`);
-    uploadFile(file, pdfRef);
-}
-
-function uploadTextFile(file) {
-    const txtRef = firebase.storage().ref(`txtfile/${file.name}`);
-    uploadFile(file, txtRef);
-}
-
-function uploadFile(file, storageRef) {
-    const uploadTask = storageRef.put(file);
-
-    uploadTask.on('state_changed', {
-        // Optional: Add progress handling here
-    }, (error) => {
-        console.error("File upload failed: ", error);
-    }, () => {
-        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-            sendMessage(downloadURL);
-        });
-    });
-}
-       function updateSendButton() {
-    const message = messageInput.value.trim();
-    const sendButtonIcon = document.getElementById('sendButtonIcon');
-
-    if (message) {
-        sendButtonIcon.className = 'fas fa-paper-plane'; // Send icon
-    } else {
-        sendButtonIcon.className = 'fas fa-folder'; // Folder icon
-    }
-}
-
-messageInput.addEventListener('input', updateSendButton);
-
+       
         function loadMessages() {
             const currentUser = auth.currentUser;
             if (!currentUser) return;
@@ -460,16 +308,13 @@ function loadHeaderProfilePhoto(headerEmail) {
                    text.includes("/txtfile%2F");
         }
 
-       sendButton.addEventListener('click', () => {
-    const message = messageInput.value.trim();
-    if (message) {
-        sendMessage(message);
-        messageInput.value = '';
-    } else {
-        filePicker.click();
-    }
-});
-
+        sendButton.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (message) {
+                sendMessage(message);
+                messageInput.value = '';
+            }
+        });
 
         auth.onAuthStateChanged(user => {
             if (user) {
