@@ -95,19 +95,37 @@
             background-color: #0056b3;
         }
         .file-preview {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
-            margin-top: 5px;
-        }
-        .pdf-preview {
-            background: url('https://img.icons8.com/material-outlined/24/000000/pdf.png') no-repeat center center;
-            background-size: contain;
-        }
-        .text-file-preview {
-            background: url('https://img.icons8.com/material-outlined/24/000000/txt.png') no-repeat center center;
-            background-size: contain;
-        }
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    margin-top: 5px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.file-info {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #666;
+}
+
+.pdf-preview {
+    background: url('https://img.icons8.com/material-outlined/24/000000/pdf.png') no-repeat center center;
+    background-size: contain;
+    width: 100px;
+    height: 150px;
+}
+
+.text-file-preview {
+    background: url('https://img.icons8.com/material-outlined/24/000000/txt.png') no-repeat center center;
+    background-size: contain;
+    width: 100px;
+    height: 150px;
+}
+
     </style>
 </head>
 <body>
@@ -224,6 +242,23 @@ function updateButtonIcon() {
 
 // Add event listener for input changes
 messageInput.addEventListener('input', updateButtonIcon);
+function formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    else if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+    else return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function getFileMetadata(fileUrl) {
+    return fetch(fileUrl, { method: 'HEAD' })
+        .then(response => {
+            const contentLength = response.headers.get('content-length');
+            return contentLength ? parseInt(contentLength, 10) : 0;
+        })
+        .catch(error => {
+            console.error('Error fetching file metadata:', error);
+            return 0;
+        });
+}
 
        
         function loadMessages() {
@@ -251,28 +286,54 @@ messageInput.addEventListener('input', updateButtonIcon);
                     messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
                     
                     if (isPdfFileUrl(messageData.text)) {
-                        const preview = document.createElement('div');
-                        preview.className = 'file-preview pdf-preview';
-                        messageDiv.appendChild(preview);
-                    } else if (isVideoUrl(messageData.text)) {
-                        const videoElement = document.createElement('video');
-                        videoElement.src = messageData.text;
-                        videoElement.controls = true;
-                        videoElement.className = 'file-preview';
-                        messageDiv.appendChild(videoElement);
-                    } else if (isImageUrl(messageData.text)) {
-                        const imgElement = document.createElement('img');
-                        imgElement.src = messageData.text;
-                        imgElement.className = 'file-preview';
-                        messageDiv.appendChild(imgElement);
-                    } else if (isTextFile(messageData.text)) {
-                        const preview = document.createElement('div');
-                        preview.className = 'file-preview text-file-preview';
-                        messageDiv.appendChild(preview);
-                    } else {
-                        messageDiv.textContent = messageData.text;
-                    }
-                    
+                const fileId = messageData.text.split('/').pop().split('.').shift();
+                const preview = document.createElement('div');
+                preview.className = 'file-preview pdf-preview';
+
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+                fileInfo.textContent = `PDF File ID: ${fileId}`;
+                
+                const fileSize = await getFileMetadata(messageData.text);
+                const sizeInfo = document.createElement('div');
+                sizeInfo.className = 'file-info';
+                sizeInfo.textContent = `Size: ${formatFileSize(fileSize)}`;
+                
+                preview.appendChild(fileInfo);
+                preview.appendChild(sizeInfo);
+                messageDiv.appendChild(preview);
+            } else if (isTextFile(messageData.text)) {
+                const fileId = messageData.text.split('/').pop().split('.').shift();
+                const preview = document.createElement('div');
+                preview.className = 'file-preview text-file-preview';
+
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+                fileInfo.textContent = `Text File ID: ${fileId}`;
+                
+                const fileSize = await getFileMetadata(messageData.text);
+                const sizeInfo = document.createElement('div');
+                sizeInfo.className = 'file-info';
+                sizeInfo.textContent = `Size: ${formatFileSize(fileSize)}`;
+                
+                preview.appendChild(fileInfo);
+                preview.appendChild(sizeInfo);
+                messageDiv.appendChild(preview);
+            } else if (isVideoUrl(messageData.text)) {
+                const videoElement = document.createElement('video');
+                videoElement.src = messageData.text;
+                videoElement.controls = true;
+                videoElement.className = 'file-preview';
+                messageDiv.appendChild(videoElement);
+            } else if (isImageUrl(messageData.text)) {
+                const imgElement = document.createElement('img');
+                imgElement.src = messageData.text;
+                imgElement.className = 'file-preview';
+                messageDiv.appendChild(imgElement);
+            } else {
+                messageDiv.textContent = messageData.text;
+            }
+            
                     messagesContainer.appendChild(messageDiv);
                     messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 });
