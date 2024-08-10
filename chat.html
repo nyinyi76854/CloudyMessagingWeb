@@ -108,6 +108,9 @@
             background: url('https://img.icons8.com/material-outlined/24/000000/txt.png') no-repeat center center;
             background-size: contain;
         }
+        #photoPicker {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -343,25 +346,36 @@ function loadHeaderProfilePhoto(headerEmail) {
             );
         }
 
-        // Handle send button click
         sendButton.addEventListener('click', () => {
             const message = messageInput.value.trim();
-            if (message) {
+            const photoFile = photoPicker.files[0];
+
+            if (photoFile) {
+                uploadPhoto(photoFile);
+            } else if (message) {
                 sendMessage(message);
-                messageInput.value = '';
-                updateButtonIcon();
-            } else {
-                photoPicker.click();
             }
         });
 
-        // Handle photo picker change event
-        photoPicker.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                handleFileUpload(file);
-            }
-        });
+        function uploadPhoto(file) {
+            const currentUser = auth.currentUser;
+            if (!currentUser) return;
+
+            const currentUserEmail = currentUser.email;
+            const fileName = new Date().getTime() + '-' + file.name;
+            const fileRef = storage.ref('messageimage/' + fileName);
+            const uploadTask = fileRef.put(file);
+
+            uploadTask.on('state_changed', (snapshot) => {
+                // Handle progress, pause, and resume of the upload
+            }, (error) => {
+                console.error('Upload failed:', error);
+            }, () => {
+                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                    sendMessage(downloadURL);
+                });
+            });
+        }
 
 
         auth.onAuthStateChanged(user => {
