@@ -123,7 +123,7 @@
         <div class="input-container">
             <input type="text" id="messageInput" placeholder="Type a message...">
             <button id="sendButton"><i class="fas fa-folder"></i></button>
-            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            <input type="file" id="photoPicker" accept="image/*">
         </div>
     </div>
 
@@ -157,7 +157,7 @@
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
-        const fileInput = document.getElementById('fileInput');
+        const photoPicker = document.getElementById('photoPicker');
 // Function to update button icon based on input
 function updateButtonIcon() {
     const message = messageInput.value.trim();
@@ -324,33 +324,45 @@ function loadHeaderProfilePhoto(headerEmail) {
                    text.includes("/txtfile%2F");
         }
 
-     sendButton.addEventListener('click', () => {
-            if (!messageInput.value.trim()) {
-                fileInput.click();
-            } else {
-                sendMessage(messageInput.value.trim());
+     function handleFileUpload(file) {
+            const storageRef = storage.ref('messageimage/' + file.name);
+            const uploadTask = storageRef.put(file);
+
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    // Handle progress if needed
+                }, 
+                (error) => {
+                    console.error('Upload failed:', error);
+                }, 
+                () => {
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        sendMessage(downloadURL);
+                    });
+                }
+            );
+        }
+
+        // Handle send button click
+        sendButton.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (message) {
+                sendMessage(message);
                 messageInput.value = '';
+                updateButtonIcon();
+            } else {
+                photoPicker.click();
             }
         });
 
-        // Handle file selection
-        fileInput.addEventListener('change', async () => {
-            const file = fileInput.files[0];
+        // Handle photo picker change event
+        photoPicker.addEventListener('change', (event) => {
+            const file = event.target.files[0];
             if (file) {
-                const storageRef = firebase.storage().ref();
-                const fileRef = storageRef.child(`sentphotos/${Date.now()}_${file.name}`);
-                try {
-                    // Upload the file
-                    await fileRef.put(file);
-                    // Get the file's download URL
-                    const downloadUrl = await fileRef.getDownloadURL();
-                    // Send the URL as a message
-                    sendMessage(downloadUrl);
-                } catch (error) {
-                    console.error("Error uploading file:", error);
-                }
+                handleFileUpload(file);
             }
         });
+
 
         auth.onAuthStateChanged(user => {
             if (user) {
