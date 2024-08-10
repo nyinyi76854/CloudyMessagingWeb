@@ -123,7 +123,8 @@
         <div class="input-container">
             <input type="text" id="messageInput" placeholder="Type a message...">
             <button id="sendButton"><i class="fas fa-folder"></i></button>
-           
+           <input type="file" id="fileInput" style="display: none;" accept="image/*">
+
 
         </div>
     </div>
@@ -158,7 +159,33 @@
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
-       
+       const fileInput = document.getElementById('fileInput');
+
+    // Function to handle file selection and upload
+    function handleFileUpload(file) {
+        const storageRef = firebase.storage().ref();
+        const fileRef = storageRef.child('sentphotos/' + file.name);
+
+        // Upload the file
+        fileRef.put(file).then(snapshot => {
+            console.log('File uploaded successfully');
+            return snapshot.ref.getDownloadURL();
+        }).then(downloadURL => {
+            console.log('File available at', downloadURL);
+            sendMessage(downloadURL); // Send the URL as a message
+        }).catch(error => {
+            console.error('Error uploading file:', error);
+        });
+    }
+
+    // Event listener for file input change
+    fileInput.addEventListener('change', event => {
+        const file = event.target.files[0];
+        if (file) {
+            handleFileUpload(file);
+        }
+    });
+
 // Function to update button icon based on input
 function updateButtonIcon() {
     const message = messageInput.value.trim();
@@ -325,13 +352,14 @@ function loadHeaderProfilePhoto(headerEmail) {
                    text.includes("/txtfile%2F");
         }
 
-      sendButton.addEventListener('click', () => {
-            const message = messageInput.value.trim();
-            if (message) {
-                sendMessage(message);
-                messageInput.value = '';
-            }
-        });
+       sendButton.addEventListener('click', () => {
+        if (messageInput.value.trim()) {
+            sendMessage(messageInput.value.trim());
+            messageInput.value = '';
+        } else {
+            fileInput.click(); // Trigger file input when folder icon is clicked
+        }
+    });
 
         auth.onAuthStateChanged(user => {
             if (user) {
