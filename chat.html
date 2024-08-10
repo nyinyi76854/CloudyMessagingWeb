@@ -162,41 +162,54 @@
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
        const fileInput = document.getElementById('fileInput');
-function uploadPhoto(file) {
-        const photoId = uuid.v4(); // Generate a UUID
-        const storageRef = storage.ref(`sentphotos/${photoId}.jpg`);
-        const uploadTask = storageRef.put(file);
+function uploadFile(file) {
+            const fileType = file.type.split('/')[0];
+            const fileId = uuid.v4(); // Generate a UUID
+            let storageRef;
+            
+            if (fileType === 'image') {
+                storageRef = storage.ref(`sentphotos/${fileId}.jpg`);
+            } else if (fileType === 'video') {
+                storageRef = storage.ref(`sentvideos/${fileId}.mp4`);
+            } else if (fileType === 'application' && file.name.endsWith('.pdf')) {
+                storageRef = storage.ref(`pdffile/${fileId}.pdf`);
+            } else if (fileType === 'text') {
+                storageRef = storage.ref(`textfile/${fileId}.txt`);
+            } else {
+                alert('Unsupported file type.');
+                return;
+            }
 
-        uploadTask.on('state_changed', snapshot => {
-            // Handle progress, pause, and resume states
-        }, error => {
-            console.error("Error uploading photo:", error);
-        }, () => {
-            uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
-                sendMessage(downloadURL);
-            }).catch(error => {
-                console.error("Error getting download URL:", error);
+            const uploadTask = storageRef.put(file);
+
+            uploadTask.on('state_changed', snapshot => {
+                // Handle progress, pause, and resume states
+            }, error => {
+                console.error("Error uploading file:", error);
+            }, () => {
+                uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
+                    sendMessage(downloadURL);
+                }).catch(error => {
+                    console.error("Error getting download URL:", error);
+                });
             });
-        });
-    }
-
-    // Function to handle file selection
-    function handleFileSelect(event) {
-        const file = event.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-            uploadPhoto(file);
-        } else {
-            alert('Please select a valid image file.');
         }
-    }
 
-    // Set up file input change event listener
-    fileInput.addEventListener('change', handleFileSelect);
+        // Function to handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                uploadFile(file);
+            }
+        }
 
-    // Function to open file picker
-    function openFilePicker() {
-        fileInput.click();
-    }
+        // Set up file input change event listener
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Function to open file picker
+        function openFilePicker() {
+            fileInput.click();
+        }
 
   
 // Function to update button icon based on input
