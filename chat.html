@@ -174,41 +174,56 @@ function updateButtonIcon() {
 messageInput.addEventListener('input', updateButtonIcon);
 fileInput.addEventListener('change', handleFileSelect);
 
-function handleFileSelect(event) {
-    const files = event.target.files;
-    for (const file of files) {
-        handleFileUpload(file);
+const storageRef = firebase.storage().ref();
+const videoRef = storageRef.child("sentvideos");
+const pdfRef = storageRef.child("pdffile");
+const txtRef = storageRef.child("txtfile");
+const imageRef = storageRef.child("sentphotos");
+
+// Function to handle file selection and upload
+function handleFileSelection(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const mimeType = file.type;
+    const fileName = file.name;
+
+    if (mimeType.includes("image") || mimeType.includes("video")) {
+        uploadFile(file, imageRef, fileName); // For images
+        uploadFile(file, videoRef, fileName); // For videos (if needed)
+    } else if (mimeType.includes("pdf")) {
+        uploadFile(file, pdfRef, fileName); // For PDFs
+    } else if (mimeType.includes("text")) {
+        uploadFile(file, txtRef, fileName); // For text files
+    } else if (mimeType.includes("audio")) {
+        uploadFile(file, storageRef.child("audio"), fileName); // For audio files
+    } else {
+        console.log("Unsupported file type.");
     }
 }
 
-// Handle file upload
-function handleFileUpload(file) {
-    const storageRef = firebase.storage().ref();
-    const fileName = file.name;
-    let folderPath = '';
+// Function to upload files to Firebase Storage
+function uploadFile(file, storageReference, originalFileName) {
+    const fileRef = storageReference.child(originalFileName);
+    const uploadTask = fileRef.put(file);
 
-    if (file.type.startsWith('video/')) {
-        folderPath = 'sentvideos/';
-    } else if (file.type.startsWith('image/')) {
-        folderPath = 'sentphotos/';
-    } else if (file.type === 'application/pdf') {
-        folderPath = 'pdffile/';
-    } else if (file.type === 'text/plain') {
-        folderPath = 'txtfile/';
-    } else {
-        console.error('Unsupported file type');
-        return;
-    }
-
-    const fileRef = storageRef.child(`${folderPath}${fileName}`);
-    fileRef.put(file).then(snapshot => {
-        return snapshot.ref.getDownloadURL();
-    }).then(downloadURL => {
-        sendMessage(downloadURL); // Send URL as a message
-    }).catch(error => {
-        console.error('Error uploading file:', error);
+    uploadTask.on('state_changed', (snapshot) => {
+        // Optional: Track upload progress
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log(`Upload is ${progress}% done`);
+    }, (error) => {
+        // Handle unsuccessful uploads
+        console.error("Upload failed:", error);
+    }, () => {
+        // Handle successful uploads on complete
+        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+            console.log(`File available at ${downloadURL}`);
+            // You can now send the download URL to your database or use it as needed
+            sendMessage(downloadURL);
+        });
     });
 }
+
 
 
        
