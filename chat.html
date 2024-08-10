@@ -212,7 +212,7 @@ function uploadFile(file) {
         }
 
   
-// Function to update button icon based on input
+
 function updateButtonIcon() {
     const message = messageInput.value.trim();
     if (message) {
@@ -222,7 +222,7 @@ function updateButtonIcon() {
     }
 }
 
-// Add event listener for input changes
+
 messageInput.addEventListener('input', updateButtonIcon);
 
        
@@ -383,6 +383,7 @@ function loadHeaderProfilePhoto(headerEmail) {
         if (message) {
             sendMessage(message);
             messageInput.value = '';
+            updateButtonIcon();
         } else {
             openFilePicker();
         }
