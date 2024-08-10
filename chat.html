@@ -108,9 +108,6 @@
             background: url('https://img.icons8.com/material-outlined/24/000000/txt.png') no-repeat center center;
             background-size: contain;
         }
-        .file-input {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -126,7 +123,8 @@
         <div class="input-container">
             <input type="text" id="messageInput" placeholder="Type a message...">
             <button id="sendButton"><i class="fas fa-folder"></i></button>
-            <input type="file" id="fileInput" accept="image/*" class="file-input">
+            <input type="file" id="fileInput" style="display: none;" accept="image/*">
+
         </div>
     </div>
 
@@ -161,7 +159,6 @@
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
         const fileInput = document.getElementById('fileInput');
-        
 // Function to update button icon based on input
 function updateButtonIcon() {
     const message = messageInput.value.trim();
@@ -174,7 +171,34 @@ function updateButtonIcon() {
 
 // Add event listener for input changes
 messageInput.addEventListener('input', updateButtonIcon);
+ function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            // Create a reference to the Firebase Storage 'sentphotos' folder
+            const storageRef = firebase.storage().ref('sentphotos/' + file.name);
+            
+            // Upload the file
+            const uploadTask = storageRef.put(file);
+            
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    // Progress monitoring (optional)
+                }, 
+                (error) => {
+                    console.error('Upload failed:', error);
+                }, 
+                () => {
+                    // Get the file download URL and send the message
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        sendMessage(downloadURL);
+                    });
+                }
+            );
+        }
+    }
 
+    // Event listener for file input change
+    fileInput.addEventListener('change', handleFileSelect);
        
         function loadMessages() {
             const currentUser = auth.currentUser;
@@ -329,57 +353,14 @@ function loadHeaderProfilePhoto(headerEmail) {
         }
 
      sendButton.addEventListener('click', () => {
-                const message = messageInput.value.trim();
-                if (message) {
-                    sendMessage(message);
-                    messageInput.value = '';
-                } else {
-                    fileInput.click(); // Open the file input dialog when folder icon is clicked
-                }
-            });
-fileInput.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        readFileAndUpload(file);
-    }
-});
-
-function readFileAndUpload(file) {
-    const reader = new FileReader();
-    
-    reader.onload = function(event) {
-        const fileDataUrl = event.target.result;
-        const fileType = file.type;
-        
-        if (fileType.startsWith('image/')) {
-            uploadFileToFirebase(fileDataUrl, file.name, 'sentphotos');
-        } else if (fileType.startsWith('video/')) {
-            uploadFileToFirebase(fileDataUrl, file.name, 'sentvideos');
-        } else if (fileType === 'application/pdf') {
-            uploadFileToFirebase(fileDataUrl, file.name, 'pdffile');
-        } else if (fileType === 'text/plain') {
-            uploadFileToFirebase(fileDataUrl, file.name, 'txtfile');
+        const message = messageInput.value.trim();
+        if (message) {
+            sendMessage(message);
+            messageInput.value = '';
         } else {
-            console.error('Unsupported file type:', fileType);
+            fileInput.click(); // Open file dialog if no message
         }
-    };
-    
-    reader.readAsDataURL(file);
-}
-
-function uploadFileToFirebase(fileDataUrl, fileName, folder) {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
-    const storageRef = firebase.storage().ref();
-    const fileRef = storageRef.child(`${folder}/${Date.now()}_${fileName}`);
-
-    fileRef.putString(fileDataUrl, 'data_url').then((snapshot) => {
-        snapshot.ref.getDownloadURL().then((downloadURL) => {
-            sendMessage(downloadURL);
-        }).catch(error => console.error('Error getting download URL:', error));
-    }).catch(error => console.error('Error uploading file:', error));
-}
+    });
 
         auth.onAuthStateChanged(user => {
             if (user) {
