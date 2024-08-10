@@ -108,9 +108,6 @@
             background: url('https://img.icons8.com/material-outlined/24/000000/txt.png') no-repeat center center;
             background-size: contain;
         }
-        #photoPicker {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -126,7 +123,6 @@
         <div class="input-container">
             <input type="text" id="messageInput" placeholder="Type a message...">
             <button id="sendButton"><i class="fas fa-folder"></i></button>
-            <input type="file" id="photoPicker" accept="image/*">
         </div>
     </div>
 
@@ -151,7 +147,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
-        const storage = firebase.storage();
+        
         const queryParams = new URLSearchParams(window.location.search);
         const emailToInteractWith = queryParams.get('header');
       document.getElementById('headerEmail').textContent = emailToInteractWith;
@@ -160,7 +156,7 @@
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
-        const photoPicker = document.getElementById('photoPicker');
+        
 // Function to update button icon based on input
 function updateButtonIcon() {
     const message = messageInput.value.trim();
@@ -327,56 +323,13 @@ function loadHeaderProfilePhoto(headerEmail) {
                    text.includes("/txtfile%2F");
         }
 
-     function handleFileUpload(file) {
-            const storageRef = storage.ref('messageimage/' + file.name);
-            const uploadTask = storageRef.put(file);
-
-            uploadTask.on('state_changed', 
-                (snapshot) => {
-                    // Handle progress if needed
-                }, 
-                (error) => {
-                    console.error('Upload failed:', error);
-                }, 
-                () => {
-                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                        sendMessage(downloadURL);
-                    });
-                }
-            );
-        }
-
-        sendButton.addEventListener('click', () => {
+     sendButton.addEventListener('click', () => {
             const message = messageInput.value.trim();
-            const photoFile = photoPicker.files[0];
-
-            if (photoFile) {
-                uploadPhoto(photoFile);
-            } else if (message) {
+            if (message) {
                 sendMessage(message);
+                messageInput.value = '';
             }
         });
-
-        function uploadPhoto(file) {
-            const currentUser = auth.currentUser;
-            if (!currentUser) return;
-
-            const currentUserEmail = currentUser.email;
-            const fileName = new Date().getTime() + '-' + file.name;
-            const fileRef = storage.ref('messageimage/' + fileName);
-            const uploadTask = fileRef.put(file);
-
-            uploadTask.on('state_changed', (snapshot) => {
-                // Handle progress, pause, and resume of the upload
-            }, (error) => {
-                console.error('Upload failed:', error);
-            }, () => {
-                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                    sendMessage(downloadURL);
-                });
-            });
-        }
-
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -387,4 +340,4 @@ function loadHeaderProfilePhoto(headerEmail) {
         });
     </script>
 </body>
-</html>
+</html> 
