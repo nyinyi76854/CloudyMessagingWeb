@@ -37,19 +37,35 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 16px;
+            box-sizing: border-box;
+        }
+        .signin-container .button-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .signin-container button {
-            width: 100%;
-            padding: 10px;
             border: none;
-            border-radius: 5px;
-            background-color: #007bff;
-            color: #fff;
-            font-size: 16px;
+            background: none;
+            font-size: 24px;
+            color: #007bff;
             cursor: pointer;
+            display: none;
+            position: absolute;
+            right: 0;
         }
-        .signin-container button:hover {
-            background-color: #0056b3;
+        .signin-container button:disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+        .signin-container .button-container::after {
+            content: '';
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: none;
+            visibility: hidden;
         }
         .error-message {
             color: red;
@@ -64,7 +80,9 @@
         <h2>Sign In</h2>
         <input type="email" id="email" placeholder="Enter your email" required>
         <input type="password" id="password" placeholder="Enter your password" required>
-        <button id="signinButton">Sign In</button>
+        <div class="button-container">
+            <button id="signinButton"><i class="fas fa-paper-plane"></i></button>
+        </div>
         <div id="errorMessage" class="error-message">Error signing in. Please try again.</div>
     </div>
 
@@ -90,11 +108,24 @@
         const auth = firebase.auth();
 
         const signinButton = document.getElementById('signinButton');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
         const errorMessage = document.getElementById('errorMessage');
 
+        function updateButtonVisibility() {
+            if (emailInput.value && passwordInput.value) {
+                signinButton.style.display = 'inline-block';
+            } else {
+                signinButton.style.display = 'none';
+            }
+        }
+
+        emailInput.addEventListener('input', updateButtonVisibility);
+        passwordInput.addEventListener('input', updateButtonVisibility);
+
         signinButton.addEventListener('click', () => {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const email = emailInput.value;
+            const password = passwordInput.value;
 
             auth.signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
