@@ -184,7 +184,7 @@
         let profilePhotoExists = false;
 
         // Fetch user data
-      auth.onAuthStateChanged(user => {
+        auth.onAuthStateChanged(user => {
             if (user) {
                 const email = user.email;
 
@@ -196,7 +196,6 @@
                 fetchProfilePhoto(email);
             }
         });
-
 
         function fetchUserInfo(email) {
             const namesRef = database.ref('names');
@@ -211,7 +210,7 @@
                         latestName = name;
                     }
                 });
-                usernameTextView.textContent = `Username: ${latestName || 'No username found'}`;
+                usernameTextView.textContent = Username: ${latestName || 'No username found'};
             });
 
             const locationRef = database.ref('location');
@@ -219,7 +218,7 @@
                 snapshot.forEach(childSnapshot => {
                     const continent = childSnapshot.child('continent').val();
                     const country = childSnapshot.child('country').val();
-                    regionTextView.textContent = `Region: ${continent ? continent + '/' : ''}${country || 'Region not found'}`;
+                    regionTextView.textContent = Region: ${continent ? continent + '/' : ''}${country || 'Region not found'};
                 });
             });
 
@@ -227,7 +226,7 @@
             genderRef.orderByChild('email').equalTo(email).once('value').then(snapshot => {
                 snapshot.forEach(childSnapshot => {
                     const gender = childSnapshot.child('gender').val();
-                    genderTextView.textContent = `Gender: ${gender || 'Unknown'}`;
+                    genderTextView.textContent = Gender: ${gender || 'Unknown'};
                 });
             });
 
@@ -235,7 +234,7 @@
             usersRef.orderByChild('email').equalTo(email).once('value').then(snapshot => {
                 snapshot.forEach(childSnapshot => {
                     const age = childSnapshot.child('age').val();
-                    ageTextView.textContent = `Age: ${age || 'Unknown'}`;
+                    ageTextView.textContent = Age: ${age || 'Unknown'};
                 });
             });
         }
