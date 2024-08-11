@@ -13,11 +13,51 @@
             padding: 0;
         }
         .file-preview {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
-            margin-top: 5px;
-        }
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    margin-top: 5px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.pdf-preview, .text-file-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+}
+
+.pdf-preview i, .text-file-preview i {
+    font-size: 30px;
+    margin-right: 10px;
+}
+
+.file-preview i {
+    font-size: 24px;
+    color: #007bff;
+}
+
+.file-preview span {
+    font-size: 16px;
+    color: #333;
+}
+
+.file-preview img {
+    max-width: 100%;
+    border-radius: 8px;
+}
+
+.file-preview video {
+    max-width: 100%;
+    border-radius: 8px;
+}
+
         .container {
             max-width: 600px;
             margin: auto;
@@ -220,33 +260,35 @@ function updateButtonIcon() {
 messageInput.addEventListener('input', updateButtonIcon);
 
        
-        function loadMessages() {
-            const currentUser = auth.currentUser;
-            if (!currentUser) return;
+      function loadMessages() {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
 
-            const currentUserEmail = currentUser.email;
-            const messagesRef = database.ref('messages');
+    const currentUserEmail = currentUser.email;
+    const messagesRef = database.ref('messages');
 
-            messagesRef.orderByChild('sentTime').on('value', snapshot => {
-                const messages = [];
-                snapshot.forEach(childSnapshot => {
-                    const messageData = childSnapshot.val();
-                    if ((messageData.senderEmail === currentUserEmail && messageData.receiverEmail === emailToInteractWith) ||
-                        (messageData.senderEmail === emailToInteractWith && messageData.receiverEmail === currentUserEmail)) {
-                        messages.push(messageData);
-                    }
-                });
+    messagesRef.orderByChild('sentTime').on('value', snapshot => {
+        const messages = [];
+        snapshot.forEach(childSnapshot => {
+            const messageData = childSnapshot.val();
+            if ((messageData.senderEmail === currentUserEmail && messageData.receiverEmail === emailToInteractWith) ||
+                (messageData.senderEmail === emailToInteractWith && messageData.receiverEmail === currentUserEmail)) {
+                messages.push(messageData);
+            }
+        });
 
-                messages.sort((a, b) => a.sentTime - b.sentTime);
+        messages.sort((a, b) => a.sentTime - b.sentTime);
 
-                messagesContainer.innerHTML = '';
-                messages.forEach(messageData => {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
-                     if (isPdfFileUrl(messageData.text)) {
+        messagesContainer.innerHTML = '';
+        messages.forEach(messageData => {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
+            
+            if (isPdfFileUrl(messageData.text)) {
                 const preview = document.createElement('div');
                 preview.className = 'file-preview pdf-preview';
                 preview.innerHTML = '<i class="fas fa-file-pdf"></i> PDF Document';
+                preview.onclick = () => downloadFile(messageData.text, 'pdf');
                 messageDiv.appendChild(preview);
             } else if (isVideoUrl(messageData.text)) {
                 const videoElement = document.createElement('video');
@@ -263,17 +305,27 @@ messageInput.addEventListener('input', updateButtonIcon);
                 const preview = document.createElement('div');
                 preview.className = 'file-preview text-file-preview';
                 preview.innerHTML = '<i class="fas fa-file-alt"></i> Text Document';
+                preview.onclick = () => downloadFile(messageData.text, 'txt');
                 messageDiv.appendChild(preview);
             } else {
                 messageDiv.textContent = messageData.text;
             }
             
-                    
-                    messagesContainer.appendChild(messageDiv);
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                });
-            });
-        }
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
+    });
+}
+
+function downloadFile(fileUrl, fileType) {
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = fileType === 'pdf' ? 'document.pdf' : 'document.txt'; // Default file name
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
        
 
         function loadUserNameForEmail(email) {
