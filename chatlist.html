@@ -29,18 +29,18 @@
     display: flex;
     align-items: center;
     background: linear-gradient(90deg, #007bff, #00c6ff); /* Background gradient */
-    padding: 15px 20px; /* Increased padding for better spacing */
+    padding: 10px 15px; /* Reduced padding for a shorter header */
     box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Deeper shadow */
-    position: fixed;
+    position: absolute;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: 50%; /* Set the max-width to 50% */
-    width: 100%;
-    z-index: 1000;
+    left: 0;
+    right: 0;
+    max-width: 100%;
     box-sizing: border-box;
     justify-content: space-between; /* Space between elements */
+    height: auto; /* Allow height to adjust based on padding */
 }
+
 
 .profile-img {
     border-radius: 50%;
