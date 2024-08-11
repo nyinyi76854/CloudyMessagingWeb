@@ -26,9 +26,21 @@
             max-width: 400px;
             text-align: center;
         }
+        .signin-container img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
         .signin-container h2 {
             margin-bottom: 20px;
             color: #007bff;
+        }
+        .signin-container p {
+            margin-bottom: 20px;
+            color: #555;
+            font-size: 14px;
         }
         .signin-container input[type="email"], .signin-container input[type="password"] {
             width: 100%;
@@ -77,6 +89,8 @@
 <body>
 
     <div class="signin-container">
+        <img src="logo.jpg" alt="Cloudy Logo">
+        <p>Once you signed in, you agree to our policies!</p>
         <h2>Sign In</h2>
         <input type="email" id="email" placeholder="Enter your email" required>
         <input type="password" id="password" placeholder="Enter your password" required>
