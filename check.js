@@ -29,7 +29,7 @@ function sendNotification(receiverEmail, message) {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'key=YOUR_SERVER_KEY'
+                            'Authorization': 'key=AAAAf9Mi-vg:APA91bG78wl9hvVgAbAxpCp-9bVv6IynCwjukaoZa4CNeWxfvcGRmtDS6U1t8oOXMt8MWcgSwMT0o8gXPd8F3snCO0FSYVZAR9WezPVWOaqdteNt3ikj9ug3qOrfPtZPfsyDZpOEOwUd'
                         },
                         body: JSON.stringify({
                             to: fcmToken,
