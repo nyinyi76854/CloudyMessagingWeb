@@ -168,17 +168,18 @@ function uploadFile(file) {
             let storageRef;
             
             if (fileType === 'image') {
-                storageRef = storage.ref(sentphotos/${fileId}.jpg);
-            } else if (fileType === 'video') {
-                storageRef = storage.ref(sentvideos/${fileId}.mp4);
-            } else if (fileType === 'application' && file.name.endsWith('.pdf')) {
-                storageRef = storage.ref(pdffile/${fileId}.pdf);
-            } else if (fileType === 'text') {
-                storageRef = storage.ref(textfile/${fileId}.txt);
-            } else {
-                alert('Unsupported file type.');
-                return;
-            }
+    storageRef = storage.ref(`sentphotos/${fileId}.jpg`);
+} else if (fileType === 'video') {
+    storageRef = storage.ref(`sentvideos/${fileId}.mp4`);
+} else if (fileType === 'application' && file.name.endsWith('.pdf')) {
+    storageRef = storage.ref(`pdffile/${fileId}.pdf`);
+} else if (fileType === 'text') {
+    storageRef = storage.ref(`textfile/${fileId}.txt`);
+} else {
+    alert('Unsupported file type.');
+    return;
+}
+
 
             const uploadTask = storageRef.put(file);
 
