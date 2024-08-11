@@ -250,29 +250,31 @@ messageInput.addEventListener('input', updateButtonIcon);
                 messages.forEach(messageData => {
                     const messageDiv = document.createElement('div');
                     messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
-                    
-                    if (isPdfFileUrl(messageData.text)) {
-                        const preview = document.createElement('div');
-                        preview.className = 'file-preview pdf-preview';
-                        messageDiv.appendChild(preview);
-                    } else if (isVideoUrl(messageData.text)) {
-                        const videoElement = document.createElement('video');
-                        videoElement.src = messageData.text;
-                        videoElement.controls = true;
-                        videoElement.className = 'file-preview';
-                        messageDiv.appendChild(videoElement);
-                    } else if (isImageUrl(messageData.text)) {
-                        const imgElement = document.createElement('img');
-                        imgElement.src = messageData.text;
-                        imgElement.className = 'file-preview';
-                        messageDiv.appendChild(imgElement);
-                    } else if (isTextFile(messageData.text)) {
-                        const preview = document.createElement('div');
-                        preview.className = 'file-preview text-file-preview';
-                        messageDiv.appendChild(preview);
-                    } else {
-                        messageDiv.textContent = messageData.text;
-                    }
+                     if (isPdfFileUrl(messageData.text)) {
+                const preview = document.createElement('div');
+                preview.className = 'file-preview pdf-preview';
+                preview.innerHTML = '<i class="fas fa-file-pdf"></i> PDF Document';
+                messageDiv.appendChild(preview);
+            } else if (isVideoUrl(messageData.text)) {
+                const videoElement = document.createElement('video');
+                videoElement.src = messageData.text;
+                videoElement.controls = true;
+                videoElement.className = 'file-preview';
+                messageDiv.appendChild(videoElement);
+            } else if (isImageUrl(messageData.text)) {
+                const imgElement = document.createElement('img');
+                imgElement.src = messageData.text;
+                imgElement.className = 'file-preview';
+                messageDiv.appendChild(imgElement);
+            } else if (isTextFile(messageData.text)) {
+                const preview = document.createElement('div');
+                preview.className = 'file-preview text-file-preview';
+                preview.innerHTML = '<i class="fas fa-file-alt"></i> Text Document';
+                messageDiv.appendChild(preview);
+            } else {
+                messageDiv.textContent = messageData.text;
+            }
+            
                     
                     messagesContainer.appendChild(messageDiv);
                     messagesContainer.scrollTop = messagesContainer.scrollHeight;
