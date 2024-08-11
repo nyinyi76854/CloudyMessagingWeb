@@ -184,20 +184,18 @@
         let profilePhotoExists = false;
 
         // Fetch user data
-       // Check if the user is signed in
-auth.onAuthStateChanged(user => {
-    if (!user) {
-        // User is not signed in, redirect to intenttoSignIn.html
-        window.location.href = 'intenttoSignIn.html';
-    } else {
-        // Proceed with the rest of your script
-        const email = user.email;
-emailTextView.textContent = Email: ${email};
-        // Fetch and display user information from the database
-        fetchUserInfo(email);
-        fetchProfilePhoto(email);
-    }
-});
+      auth.onAuthStateChanged(user => {
+            if (user) {
+                const email = user.email;
+
+                // Display email
+                emailTextView.textContent = Email: ${email};
+
+                // Fetch and display user information from the database
+                fetchUserInfo(email);
+                fetchProfilePhoto(email);
+            }
+        });
 
 
         function fetchUserInfo(email) {
