@@ -94,45 +94,20 @@
         #sendButton:hover {
             background-color: #0056b3;
         }
-       /* Add styles for PDF and text file previews */
-.file-preview {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 5px;
-    background-color: #f4f4f4;
-}
-
-.pdf-preview, .text-file-preview {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 5px;
-    background-color: #fff;
-    box-shadow: 0 0 5px rgba(0,0,0,0.1);
-}
-
-.pdf-icon, .text-file-icon {
-    width: 40px;
-    height: 40px;
-    margin-right: 10px;
-}
-
-.pdf-preview {
-    background-color: #eaf0f6;
-}
-
-.text-file-preview {
-    background-color: #f0f9ff;
-}
-
-.file-preview span {
-    font-size: 14px;
-    color: #333;
-}
-
+        .file-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+        .pdf-preview {
+            background: url('https://img.icons8.com/material-outlined/24/000000/pdf.png') no-repeat center center;
+            background-size: contain;
+        }
+        .text-file-preview {
+            background: url('https://img.icons8.com/material-outlined/24/000000/txt.png') no-repeat center center;
+            background-size: contain;
+        }
     </style>
 </head>
 <body>
@@ -237,7 +212,7 @@ function uploadFile(file) {
         }
 
   
-
+// Function to update button icon based on input
 function updateButtonIcon() {
     const message = messageInput.value.trim();
     if (message) {
@@ -247,7 +222,7 @@ function updateButtonIcon() {
     }
 }
 
-
+// Add event listener for input changes
 messageInput.addEventListener('input', updateButtonIcon);
 
        
@@ -275,42 +250,28 @@ messageInput.addEventListener('input', updateButtonIcon);
                     const messageDiv = document.createElement('div');
                     messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
                     
-                     if (isPdfFileUrl(messageData.text)) {
-                const preview = document.createElement('div');
-                preview.className = 'file-preview pdf-preview';
-                const pdfIcon = document.createElement('img');
-                pdfIcon.src = 'https://img.icons8.com/material-outlined/24/000000/pdf.png'; // PDF icon URL
-                pdfIcon.className = 'pdf-icon';
-                preview.appendChild(pdfIcon);
-                const textSpan = document.createElement('span');
-                textSpan.textContent = 'PDF Document';
-                preview.appendChild(textSpan);
-                messageDiv.appendChild(preview);
-            } else if (isVideoUrl(messageData.text)) {
-                const videoElement = document.createElement('video');
-                videoElement.src = messageData.text;
-                videoElement.controls = true;
-                videoElement.className = 'file-preview';
-                messageDiv.appendChild(videoElement);
-            } else if (isImageUrl(messageData.text)) {
-                const imgElement = document.createElement('img');
-                imgElement.src = messageData.text;
-                imgElement.className = 'file-preview';
-                messageDiv.appendChild(imgElement);
-            } else if (isTextFile(messageData.text)) {
-                const preview = document.createElement('div');
-                preview.className = 'file-preview text-file-preview';
-                const textIcon = document.createElement('img');
-                textIcon.src = 'https://img.icons8.com/material-outlined/24/000000/txt.png'; // Text file icon URL
-                textIcon.className = 'text-file-icon';
-                preview.appendChild(textIcon);
-                const textSpan = document.createElement('span');
-                textSpan.textContent = 'Text Document';
-                preview.appendChild(textSpan);
-                messageDiv.appendChild(preview);
-            } else {
-                messageDiv.textContent = messageData.text;
-            }
+                    if (isPdfFileUrl(messageData.text)) {
+                        const preview = document.createElement('div');
+                        preview.className = 'file-preview pdf-preview';
+                        messageDiv.appendChild(preview);
+                    } else if (isVideoUrl(messageData.text)) {
+                        const videoElement = document.createElement('video');
+                        videoElement.src = messageData.text;
+                        videoElement.controls = true;
+                        videoElement.className = 'file-preview';
+                        messageDiv.appendChild(videoElement);
+                    } else if (isImageUrl(messageData.text)) {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = messageData.text;
+                        imgElement.className = 'file-preview';
+                        messageDiv.appendChild(imgElement);
+                    } else if (isTextFile(messageData.text)) {
+                        const preview = document.createElement('div');
+                        preview.className = 'file-preview text-file-preview';
+                        messageDiv.appendChild(preview);
+                    } else {
+                        messageDiv.textContent = messageData.text;
+                    }
                     
                     messagesContainer.appendChild(messageDiv);
                     messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -422,7 +383,6 @@ function loadHeaderProfilePhoto(headerEmail) {
         if (message) {
             sendMessage(message);
             messageInput.value = '';
-            updateButtonIcon();
         } else {
             openFilePicker();
         }
