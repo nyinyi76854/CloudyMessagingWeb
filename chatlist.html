@@ -24,6 +24,30 @@
     color: #888;
     margin-top: 5px;
 }
+/* General message style */
+.message {
+    font-size: 14px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    color: black; /* Default color for other message types */
+}
+
+/* Apply blue color to specific message types */
+.message.pdf-file {
+    color: blue;
+}
+
+.message.video-file {
+    color: blue;
+}
+
+.message.photo-file {
+    color: blue;
+}
+
+.message.txt-file {
+    color: blue;
+}
 
         .header {
             display: flex;
@@ -375,20 +399,25 @@ function loadChatItems() {
             
         });
 
-       for (const chatPartner in latestMessages) {
-            let { message, senderEmail, recipientEmail, timestamp } = latestMessages[chatPartner];
-            let displayMessage = message;
+      for (const chatPartner in latestMessages) {
+    let { message, senderEmail, recipientEmail, timestamp } = latestMessages[chatPartner];
+    let displayMessage = message;
+    let messageTypeClass = '';
 
-            // Check the type of the message and update the display message accordingly
-            if (isPdfFileUrl(message)) {
-                displayMessage = "PDF file";
-            } else if (isVideoUrl(message)) {
-                displayMessage = "Video file";
-            } else if (isImageUrl(message)) {
-                displayMessage = "Photo";
-            } else if (isTextFile(message)) {
-                displayMessage = "TXT file";
-            }
+    // Check the type of the message and update the display message and class accordingly
+    if (isPdfFileUrl(message)) {
+        displayMessage = "PDF file";
+        messageTypeClass = 'pdf-file';
+    } else if (isVideoUrl(message)) {
+        displayMessage = "Video file";
+        messageTypeClass = 'video-file';
+    } else if (isImageUrl(message)) {
+        displayMessage = "Photo";
+        messageTypeClass = 'photo-file';
+    } else if (isTextFile(message)) {
+        displayMessage = "TXT file";
+        messageTypeClass = 'txt-file';
+    }
 
             // Truncate the message if it's too long
             const truncatedMessage = displayMessage.length > 26 ? displayMessage.substring(0, 26) + '...' : displayMessage;
