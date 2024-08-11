@@ -203,6 +203,30 @@
     border-radius: 50%;
     margin-right: 10px;
 }
+.chat-item {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            cursor: pointer; /* Indicate that it's clickable */
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .chat-item:hover {
+            background-color: #f1f1f1; /* Light gray background on hover */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Slightly larger shadow */
+        }
+        
+        .chat-item img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
 
 .message-container {
     display: flex;
@@ -357,7 +381,7 @@ function loadChatItems() {
             // Create a new chat item container
             const chatItem = document.createElement('div');
             chatItem.className = 'chat-item';
-
+            chatItem.onclick = () => openChat(chatPartner);
             // Fetch the profile image URL for the chat partner
             fetchProfileImage(chatPartner, (profileImageUrl) => {
                 // Create and add the profile image element
@@ -487,7 +511,9 @@ function fetchProfileImage(email, callback) {
         function editUsername() {
             window.location.href = 'editusername.html';
         }
-
+function openChat(email) {
+    window.location.href = `chat.html?header=${encodeURIComponent(email)}`;
+}
         // Add click event to profile image to open sidebar
         document.getElementById('profile-img').onclick = openNav;
     </script>
