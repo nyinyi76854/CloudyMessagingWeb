@@ -372,12 +372,26 @@ function loadChatItems() {
                     latestMessages[chatPartner] = { message, senderEmail, recipientEmail, timestamp, chatPartner };
                 }
             }
+            
         });
 
-        // Display the latest message for each chat partner
-        for (const chatPartner in latestMessages) {
-            const { message, senderEmail, recipientEmail, timestamp } = latestMessages[chatPartner];
-            const truncatedMessage = message.length > 26 ? message.substring(0, 26) + '...' : message;
+       for (const chatPartner in latestMessages) {
+            let { message, senderEmail, recipientEmail, timestamp } = latestMessages[chatPartner];
+            let displayMessage = message;
+
+            // Check the type of the message and update the display message accordingly
+            if (isPdfFileUrl(message)) {
+                displayMessage = "PDF file";
+            } else if (isVideoUrl(message)) {
+                displayMessage = "Video file";
+            } else if (isImageUrl(message)) {
+                displayMessage = "Photo";
+            } else if (isTextFile(message)) {
+                displayMessage = "TXT file";
+            }
+
+            // Truncate the message if it's too long
+            const truncatedMessage = displayMessage.length > 26 ? displayMessage.substring(0, 26) + '...' : displayMessage;
 
             // Create a new chat item container
             const chatItem = document.createElement('div');
@@ -426,6 +440,25 @@ function loadChatItems() {
     });
 }
 
+function isPdfFileUrl(text) {
+    return text.startsWith("https://firebasestorage.googleapis.com") &&
+           text.includes("/pdffile%2F");
+}
+
+function isVideoUrl(text) {
+    return text.startsWith("https://firebasestorage.googleapis.com") &&
+           text.includes("/sentvideos%2F");
+}
+
+function isImageUrl(text) {
+    return text.startsWith("https://firebasestorage.googleapis.com") &&
+           (text.includes("/sentphotos%2F") || text.includes("/sentvideos%2F"));
+}
+
+function isTextFile(text) {
+    return text.startsWith("https://firebasestorage.googleapis.com") &&
+           text.includes("/txtfile%2F");
+}
 
 // Function to fetch the profile image URL for a given email
 function fetchProfileImage(email, callback) {
