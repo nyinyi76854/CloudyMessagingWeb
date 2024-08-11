@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat List</title>
      <link rel="icon" href="logo_modified.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style>
        body {
     font-family: Arial, sans-serif;
@@ -104,6 +106,7 @@
 
 .sidebar .icon {
     margin-right: 10px;
+    font-size: 20px; /* Adjust icon size */
 }
 
 .sidebar .logout-icon,
@@ -111,6 +114,12 @@
 .sidebar .edit-username-icon {
     width: 20px;
     height: 20px;
+}
+
+/* Optional: adjust spacing if needed */
+.sidebar a {
+    display: flex;
+    align-items: center;
 }
 
 .sidebar-closebtn {
@@ -255,13 +264,14 @@
     </div>
 
     <div id="mySidebar" class="sidebar">
-        <span class="sidebar-closebtn" onclick="closeNav()">&times;</span>
-        <a href="#" onclick="editName()"><span class="icon edit-name-icon"></span>Edit Name</a>
-        <a href="#" onclick="editUsername()"><span class="icon edit-username-icon"></span>Edit Username</a>
-        <a href="account.html"><span class="icon"></span>Account</a>
-        <a href="successOfCloudyMessagingAppFounder.html">Cloudy's Owner</a>
-        <a href="#" onclick="showLogoutConfirmation()"><span class="icon logout-icon"></span>Logout</a>
-    </div>
+    <span class="sidebar-closebtn" onclick="closeNav()">&times;</span>
+    <a href="#" onclick="editName()"><span class="icon fas fa-user-edit"></span>Edit Name</a>
+    <a href="#" onclick="editUsername()"><span class="icon fas fa-user-cog"></span>Edit Username</a>
+    <a href="account.html"><span class="icon fas fa-user"></span>Account</a>
+    <a href="successOfCloudyMessagingAppFounder.html"><span class="icon fas fa-trophy"></span>Cloudy's Owner</a>
+    <a href="#" onclick="showLogoutConfirmation()"><span class="icon fas fa-sign-out-alt"></span>Logout</a>
+</div>
+
  <div class="chat-container" id="chatContainer">
         <!-- Chat items will be dynamically inserted here -->
     </div>
