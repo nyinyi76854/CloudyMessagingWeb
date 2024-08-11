@@ -185,17 +185,20 @@
 
         // Fetch user data
         auth.onAuthStateChanged(user => {
-            if (user) {
-                const email = user.email;
+    if (user) {
+        const email = user.email;
+        console.log("User email:", email); // Debug log
 
-                // Display email
-                emailTextView.textContent = Email: ${email};
+        // Display email
+        emailTextView.textContent = `Email: ${email}`;
 
-                // Fetch and display user information from the database
-                fetchUserInfo(email);
-                fetchProfilePhoto(email);
-            }
-        });
+        // Fetch and display user information from the database
+        fetchUserInfo(email);
+        fetchProfilePhoto(email);
+    } else {
+        console.log("No user is authenticated");
+    }
+});
 
         function fetchUserInfo(email) {
             const namesRef = database.ref('names');
