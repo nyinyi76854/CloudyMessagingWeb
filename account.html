@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,73 +52,61 @@
             margin: 10px 0;
         }
 
-       /* Center modal content */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-}
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
 
-/* Style modal content */
-.modal-content {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 30px;
-    text-align: center;
-    max-width: 400px;
-    margin: auto;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
+        .modal-content {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            margin: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
 
-/* Style profile image inside modal */
-.modal-content img {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 20px;
-}
+        .modal-content img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
 
-/* Style close button */
-.close-button {
-    background: gray;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-top: 10px;
-    margin-right: 10px;
-}
+        .close-button,
+        .delete-button {
+            background: gray;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
 
-/* Style delete button */
-.delete-button {
-    background: red;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-top: 10px;
-    margin-left: 10px;
-}
+        .delete-button {
+            background: red;
+            margin-left: 10px;
+        }
 
-/* Add hover effect to buttons */
-.close-button:hover, .delete-button:hover {
-    opacity: 0.8;
-}
-
-
+        .close-button:hover,
+        .delete-button:hover {
+            opacity: 0.8;
+        }
     </style>
 </head>
+
 <body>
     <div class="header">
         <button id="backButton" class="action-button"><i class="fas fa-arrow-left"></i></button>
@@ -137,7 +126,7 @@
     <!-- Modal for displaying profile image -->
     <div id="imageModal" class="modal">
         <div class="modal-content">
-            <span id="closeModal" class="close-button">&times;</span>
+            <button id="closeModal" class="close-button">Close</button>
             <img id="modalProfileImage" src="user_1077114.png" alt="Profile Photo">
             <button id="deleteButton" class="delete-button">Delete Photo</button>
         </div>
@@ -185,20 +174,19 @@
 
         // Fetch user data
         auth.onAuthStateChanged(user => {
-    if (user) {
-        const email = user.email;
-        console.log("User email:", email); // Debug log
+            if (user) {
+                const email = user.email;
 
-        // Display email
-        emailTextView.textContent = `Email: ${email}`;
+                // Display email
+                emailTextView.textContent = `Email: ${email}`;
 
-        // Fetch and display user information from the database
-        fetchUserInfo(email);
-        fetchProfilePhoto(email);
-    } else {
-        console.log("No user is authenticated");
-    }
-});
+                // Fetch and display user information from the database
+                fetchUserInfo(email);
+                fetchProfilePhoto(email);
+            } else {
+                console.error("User is not authenticated.");
+            }
+        });
 
         function fetchUserInfo(email) {
             const namesRef = database.ref('names');
@@ -213,33 +201,33 @@
                         latestName = name;
                     }
                 });
-                usernameTextView.textContent = Username: ${latestName || 'No username found'};
-            });
+                usernameTextView.textContent = `Username: ${latestName || 'No username found'}`;
+            }).catch(error => console.error("Error fetching username:", error));
 
             const locationRef = database.ref('location');
             locationRef.orderByChild('email').equalTo(email).once('value').then(snapshot => {
                 snapshot.forEach(childSnapshot => {
                     const continent = childSnapshot.child('continent').val();
                     const country = childSnapshot.child('country').val();
-                    regionTextView.textContent = Region: ${continent ? continent + '/' : ''}${country || 'Region not found'};
+                    regionTextView.textContent = `Region: ${continent ? continent + '/' : ''}${country || 'Region not found'}`;
                 });
-            });
+            }).catch(error => console.error("Error fetching location:", error));
 
             const genderRef = database.ref('gender');
             genderRef.orderByChild('email').equalTo(email).once('value').then(snapshot => {
                 snapshot.forEach(childSnapshot => {
                     const gender = childSnapshot.child('gender').val();
-                    genderTextView.textContent = Gender: ${gender || 'Unknown'};
+                    genderTextView.textContent = `Gender: ${gender || 'Unknown'}`;
                 });
-            });
+            }).catch(error => console.error("Error fetching gender:", error));
 
             const usersRef = database.ref('users');
             usersRef.orderByChild('email').equalTo(email).once('value').then(snapshot => {
                 snapshot.forEach(childSnapshot => {
                     const age = childSnapshot.child('age').val();
-                    ageTextView.textContent = Age: ${age || 'Unknown'};
+                    ageTextView.textContent = `Age: ${age || 'Unknown'}`;
                 });
-            });
+            }).catch(error => console.error("Error fetching age:", error));
         }
 
         function fetchProfilePhoto(email) {
@@ -259,65 +247,77 @@
                 if (latestPhotoUrl) {
                     profilePhotoExists = true;
                     profileImageView.src = latestPhotoUrl;
+                    modalProfileImage.src = latestPhotoUrl;
                 } else {
                     profilePhotoExists = false;
-                    profileImageView.src = 'user_1077114.png';
                 }
-            });
+            }).catch(error => console.error("Error fetching profile photo:", error));
         }
 
-        // Profile image click handler
+        // Event listeners
         profileImageView.addEventListener('click', () => {
             if (profilePhotoExists) {
-                const profileImageUrl = profileImageView.src;
-                modalProfileImage.src = profileImageUrl;
                 imageModal.style.display = 'flex';
             } else {
-                // Trigger file input click to select a new photo
                 photoPicker.click();
             }
         });
 
-        // Close modal
         closeModal.addEventListener('click', () => {
             imageModal.style.display = 'none';
         });
 
-        // Delete profile photo
         deleteButton.addEventListener('click', () => {
-            const email = auth.currentUser.email;
-            database.ref('profilesphoto').orderByChild('uploaderEmail').equalTo(email).once('value').then(snapshot => {
+            const profilesPhotoRef = database.ref('profilesphoto');
+            profilesPhotoRef.orderByChild('uploaderEmail').equalTo(auth.currentUser.email).once('value').then(snapshot => {
                 snapshot.forEach(childSnapshot => {
-                    childSnapshot.ref.remove();
+                    const photoUrl = childSnapshot.child('downloadUrl').val();
+                    const storageRef = storage.refFromURL(photoUrl);
+                    storageRef.delete().then(() => {
+                        childSnapshot.ref.remove().then(() => {
+                            console.log('Profile photo deleted successfully');
+                            profileImageView.src = 'user_1077114.png';
+                            modalProfileImage.src = 'user_1077114.png';
+                            imageModal.style.display = 'none';
+                            profilePhotoExists = false;
+                        }).catch(error => console.error('Error deleting profile photo from database:', error));
+                    }).catch(error => console.error('Error deleting profile photo from storage:', error));
                 });
-                profileImageView.src = 'user_1077114.png';
-                profilePhotoExists = false;
-                imageModal.style.display = 'none';
-            });
+            }).catch(error => console.error("Error deleting profile photo:", error));
         });
 
-        // Handle file input change event
-        photoPicker.addEventListener('change', (event) => {
+        photoPicker.addEventListener('change', event => {
             const file = event.target.files[0];
             if (file) {
-                const email = auth.currentUser.email;
-                const storageRef = storage.ref('profilesphoto/' + file.name);
-                storageRef.put(file).then(snapshot => {
-                    return snapshot.ref.getDownloadURL();
-                }).then(downloadURL => {
-                    const newPhotoRef = database.ref('profilesphoto').push();
-                    newPhotoRef.set({
-                        uploaderEmail: email,
-                        downloadUrl: downloadURL,
-                        timestamp: firebase.database.ServerValue.TIMESTAMP
-                    });
-                    profileImageView.src = downloadURL;
-                    profilePhotoExists = true;
-                }).catch(error => {
-                    console.error('Error uploading profile photo:', error);
-                });
+                const storageRef = storage.ref(`profilesphoto/${auth.currentUser.uid}_${Date.now()}`);
+                const uploadTask = storageRef.put(file);
+
+                uploadTask.on('state_changed',
+                    snapshot => {
+                        // You can add a progress indicator here if desired
+                    },
+                    error => {
+                        console.error('Upload failed:', error);
+                    },
+                    () => {
+                        uploadTask.snapshot.ref.getDownloadURL().then(downloadUrl => {
+                            const profilesPhotoRef = database.ref('profilesphoto').push();
+                            profilesPhotoRef.set({
+                                uploaderEmail: auth.currentUser.email,
+                                downloadUrl: downloadUrl,
+                                timestamp: Date.now()
+                            }).then(() => {
+                                profileImageView.src = downloadUrl;
+                                modalProfileImage.src = downloadUrl;
+                                profilePhotoExists = true;
+                                console.log('Profile photo uploaded successfully');
+                            }).catch(error => console.error('Error saving profile photo data:', error));
+                        }).catch(error => console.error('Error getting download URL:', error));
+                    }
+                );
             }
         });
     </script>
 </body>
+
 </html>
