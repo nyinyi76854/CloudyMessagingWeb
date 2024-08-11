@@ -24,7 +24,20 @@
         p {
             margin-bottom: 15px;
         }
+         .email-link {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .email-link:hover {
+            text-decoration: underline;
+        }
     </style>
+    <script>
+        function openChat(email) {
+            window.location.href = `chat.html?header=${encodeURIComponent(email)}`;
+        }
+    </script>
 </head>
 <body>
     <h1>Copyright Notice</h1>
@@ -61,6 +74,8 @@
         comply with all applicable laws and regulations.
     </p>
 
-    <p>If you have any questions regarding these copyright notices or the use of our products, please contact us at nyinyilinnhtet399@gmail.com.</p>
+    <p>If you have any questions regarding these copyright notices or the use of our products, please contact us at 
+        <span class="email-link" onclick="openChat('nyinyilinnhtet399@gmail.com')">nyinyilinnhtet399@gmail.com</span>.
+    </p>
 </body>
 </html>
