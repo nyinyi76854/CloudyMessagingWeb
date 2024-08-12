@@ -141,7 +141,10 @@
         #sendButton:hover {
             background-color: #0056b3;
         }
-        
+        .url-message {
+    color: black;
+}
+
     </style>
 </head>
 <body>
@@ -283,8 +286,10 @@ messageInput.addEventListener('input', updateButtonIcon);
         messagesContainer.innerHTML = '';
         messages.forEach(messageData => {
             const messageDiv = document.createElement('div');
-            messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
-            
+            const isUrlMessage = /^(https?:\/\/|www\.)/.test(messageData.text);
+           messageDiv.className = messageData.senderEmail === currentUserEmail ? 
+            `message sent ${isUrlMessage ? 'url-message' : ''}` : 
+            `message received ${isUrlMessage ? 'url-message' : ''}`;
             if (isPdfFileUrl(messageData.text)) {
                 const preview = document.createElement('div');
                 preview.className = 'file-preview pdf-preview';
