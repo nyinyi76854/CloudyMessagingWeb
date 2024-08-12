@@ -141,7 +141,7 @@
         #sendButton:hover {
             background-color: #0056b3;
         }
-        .url-message {
+      .url-message {
     color: black;
 }
 
@@ -311,6 +311,13 @@ messageInput.addEventListener('input', updateButtonIcon);
                 preview.innerHTML = '<i class="fas fa-file-alt"></i> Text Document';
                 preview.onclick = () => downloadFile(messageData.text, 'txt');
                 messageDiv.appendChild(preview);
+            } else if (isUrlMessage) {
+                const linkElement = document.createElement('a');
+                linkElement.href = messageData.text;
+                linkElement.textContent = messageData.text;
+                linkElement.style.color = 'black';
+                linkElement.target = '_blank'; // Open in a new tab
+                messageDiv.appendChild(linkElement);
             } else {
                 messageDiv.textContent = messageData.text;
             }
