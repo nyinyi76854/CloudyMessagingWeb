@@ -433,7 +433,9 @@ function loadHeaderProfilePhoto(headerEmail) {
             return text.startsWith("https://firebasestorage.googleapis.com") &&
                    text.includes("/sentvideos%2F");
         }
-
+function isUrl(text) {
+    return /^https?:\/\/|^www\./.test(text);
+}
         function isImageUrl(text) {
             return text.startsWith("https://firebasestorage.googleapis.com") &&
                    (text.includes("/sentphotos%2F") || text.includes("/sentvideos%2F"));
