@@ -284,9 +284,16 @@ messageInput.addEventListener('input', updateButtonIcon);
         messages.forEach(messageData => {
             const messageDiv = document.createElement('div');
             messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
-             if (messageData.text.startsWith("https://") || messageData.text.startsWith("http://") || messageData.text.startsWith("www")) {
-                messageDiv.style.color = 'white'; // Apply white color
-            }
+            let messageContent = messageData.text;
+
+            // Replace URLs with clickable links
+            const urlPattern = /(https?:\/\/[^\s]+)/g;
+            messageContent = messageContent.replace(urlPattern, url => {
+                return `<a href="${url}" target="_blank" style="color: #000;">${url}</a>`;
+            });
+
+            // Add content to the message div
+            messageDiv.innerHTML = messageContent;
 
             if (isPdfFileUrl(messageData.text)) {
                 const preview = document.createElement('div');
