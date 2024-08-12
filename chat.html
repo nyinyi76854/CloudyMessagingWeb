@@ -122,9 +122,6 @@
     margin-right: 10px;
     vertical-align: middle;
 }
-.url-message a {
-    color: black;
-}
 
         #messageInput {
             flex: 1;
@@ -205,13 +202,13 @@ function uploadFile(file) {
             let storageRef;
             
             if (fileType === 'image') {
-    storageRef = storage.ref(`sentphotos/${fileId}.jpg`);
+    storageRef = storage.ref(sentphotos/${fileId}.jpg);
 } else if (fileType === 'video') {
-    storageRef = storage.ref(`sentvideos/${fileId}.mp4`);
+    storageRef = storage.ref(sentvideos/${fileId}.mp4);
 } else if (fileType === 'application' && file.name.endsWith('.pdf')) {
-    storageRef = storage.ref(`pdffile/${fileId}.pdf`);
+    storageRef = storage.ref(pdffile/${fileId}.pdf);
 } else if (fileType === 'text') {
-    storageRef = storage.ref(`textfile/${fileId}.txt`);
+    storageRef = storage.ref(textfile/${fileId}.txt);
 } else {
     alert('Unsupported file type.');
     return;
@@ -263,7 +260,6 @@ function updateButtonIcon() {
 // Add event listener for input changes
 messageInput.addEventListener('input', updateButtonIcon);
 
-
        
       function loadMessages() {
     const currentUser = auth.currentUser;
@@ -288,19 +284,7 @@ messageInput.addEventListener('input', updateButtonIcon);
         messages.forEach(messageData => {
             const messageDiv = document.createElement('div');
             messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
-             function linkify(text) {
-        const urlPattern = /(\b(https?|http|www|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|]|\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-        return text.replace(urlPattern, url => {
-            const href = url.startsWith('http') ? url : 'http://' + url;
-            return `<a href="${href}" target="_blank">${url}</a>`;
-        });
-    }
-if (isUrl(messageData.text)) {
-        messageDiv.classList.add('url-message');
-        messageDiv.innerHTML = linkify(messageData.text);
-    } else {
-        messageDiv.textContent = messageData.text;
-    }
+            
             if (isPdfFileUrl(messageData.text)) {
                 const preview = document.createElement('div');
                 preview.className = 'file-preview pdf-preview';
@@ -326,7 +310,6 @@ if (isUrl(messageData.text)) {
                 messageDiv.appendChild(preview);
             } else {
                 messageDiv.textContent = messageData.text;
-                
             }
             
             messagesContainer.appendChild(messageDiv);
@@ -433,9 +416,7 @@ function loadHeaderProfilePhoto(headerEmail) {
             return text.startsWith("https://firebasestorage.googleapis.com") &&
                    text.includes("/sentvideos%2F");
         }
-function isUrl(text) {
-    return /^https?:\/\/|^www\./.test(text);
-}
+
         function isImageUrl(text) {
             return text.startsWith("https://firebasestorage.googleapis.com") &&
                    (text.includes("/sentphotos%2F") || text.includes("/sentvideos%2F"));
