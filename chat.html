@@ -122,6 +122,9 @@
     margin-right: 10px;
     vertical-align: middle;
 }
+.url-message {
+    color: black;
+}
 
         #messageInput {
             flex: 1;
@@ -259,6 +262,9 @@ function updateButtonIcon() {
 
 // Add event listener for input changes
 messageInput.addEventListener('input', updateButtonIcon);
+function isUrl(text) {
+    return /^https?:\/\/|^www\./.test(text);
+}
 
        
       function loadMessages() {
@@ -284,16 +290,9 @@ messageInput.addEventListener('input', updateButtonIcon);
         messages.forEach(messageData => {
             const messageDiv = document.createElement('div');
             messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
-            let messageContent = messageData.text;
-
-            // Replace URLs with clickable links
-            const urlPattern = /(https?:\/\/[^\s]+)/g;
-            messageContent = messageContent.replace(urlPattern, url => {
-                return `<a href="${url}" target="_blank" style="color: #000;">${url}</a>`;
-            });
-
-            // Add content to the message div
-            messageDiv.innerHTML = messageContent;
+             if (isUrl(messageData.text)) {
+        messageDiv.classList.add('url-message');
+    }
 
             if (isPdfFileUrl(messageData.text)) {
                 const preview = document.createElement('div');
@@ -320,6 +319,7 @@ messageInput.addEventListener('input', updateButtonIcon);
                 messageDiv.appendChild(preview);
             } else {
                 messageDiv.textContent = messageData.text;
+                 return messageDiv;
             }
             
             messagesContainer.appendChild(messageDiv);
