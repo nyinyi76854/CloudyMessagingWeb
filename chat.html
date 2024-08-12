@@ -122,7 +122,7 @@
     margin-right: 10px;
     vertical-align: middle;
 }
-.url-message {
+.url-message a {
     color: black;
 }
 
@@ -262,9 +262,7 @@ function updateButtonIcon() {
 
 // Add event listener for input changes
 messageInput.addEventListener('input', updateButtonIcon);
-function isUrl(text) {
-    return /^https?:\/\/|^www\./.test(text);
-}
+
 
        
       function loadMessages() {
@@ -290,10 +288,19 @@ function isUrl(text) {
         messages.forEach(messageData => {
             const messageDiv = document.createElement('div');
             messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
-             if (isUrl(messageData.text)) {
-        messageDiv.classList.add('url-message');
+             function linkify(text) {
+        const urlPattern = /(\b(https?|http|www|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|]|\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        return text.replace(urlPattern, url => {
+            const href = url.startsWith('http') ? url : 'http://' + url;
+            return `<a href="${href}" target="_blank">${url}</a>`;
+        });
     }
-
+if (isUrl(messageData.text)) {
+        messageDiv.classList.add('url-message');
+        messageDiv.innerHTML = linkify(messageData.text);
+    } else {
+        messageDiv.textContent = messageData.text;
+    }
             if (isPdfFileUrl(messageData.text)) {
                 const preview = document.createElement('div');
                 preview.className = 'file-preview pdf-preview';
