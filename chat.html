@@ -284,7 +284,10 @@ messageInput.addEventListener('input', updateButtonIcon);
         messages.forEach(messageData => {
             const messageDiv = document.createElement('div');
             messageDiv.className = messageData.senderEmail === currentUserEmail ? 'message sent' : 'message received';
-            
+             if (messageData.text.startsWith("https://") || messageData.text.startsWith("http://") || messageData.text.startsWith("www")) {
+                messageDiv.style.color = 'white'; // Apply white color
+            }
+
             if (isPdfFileUrl(messageData.text)) {
                 const preview = document.createElement('div');
                 preview.className = 'file-preview pdf-preview';
