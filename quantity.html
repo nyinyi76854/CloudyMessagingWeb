@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burmese Language Display</title>
+</head>
+<body>
+
+<h1>Displaying "ဆရာကြီး" 1,000,000 times</h1>
+<div id="output"></div>
+
+<script>
+    // Initialize an empty string
+    let text = "";
+
+    // Loop to append "ဆရာကြီး" 1,000,000 times
+    for (let i = 0; i < 1000000; i++) {
+        text += "ဆရာကြီး ";
+    }
+
+    // Display the result in the div with id="output"
+    document.getElementById("output").textContent = text;
+</script>
+
+</body>
+</html>
