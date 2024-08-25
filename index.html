@@ -97,6 +97,18 @@
             height: 100%;
             overflow-y: auto;
         }
+
+        /* Fixed image to the right of the container */
+        .fixed-image {
+            position: fixed;
+            top: 50%;
+            right: 10%;
+            transform: translateY(-50%);
+            max-width: 400px;
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
     </style>
 </head>
 
@@ -136,6 +148,9 @@
         <!-- Desktop advice -->
         <p class="desktop-advice">For the best experience, we recommend using Cloudy on a desktop or laptop.</p>
     </div>
+
+    <!-- Non-scrollable fixed image -->
+    <img src="main.jpg" alt="Main Image" class="fixed-image">
 
     <!-- Firebase JavaScript SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
