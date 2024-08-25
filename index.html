@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   
     <title>Welcome to Cloudy</title>
     <link rel="icon" href="logo_modified.ico" type="image/x-icon">
 
@@ -17,32 +17,51 @@
             height: 100vh;
             margin: 0;
         }
+
         .container {
             background: #ffffff;
-            padding: 30px 50px;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
             text-align: center;
             max-width: 450px;
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
+
         .logo {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            margin-bottom: 20px;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
             object-fit: cover;
         }
-        p {
-            font-size: 18px;
+
+        video {
+            width: 100%;
+            max-height: 200px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        .scrollable-text {
+            height: 150px;
+            overflow-y: scroll;
+            padding: 10px;
+            text-align: left;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .scrollable-text p {
+            font-size: 14px;
             line-height: 1.6;
             color: #333;
-            margin-bottom: 30px;
+            margin: 0;
         }
-        .highlight {
-            color: #007bff;
-            font-weight: bold;
-        }
+
         button {
             width: 100%;
             padding: 15px;
@@ -57,12 +76,15 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
+
         button:hover {
             background-color: #0056b3;
         }
+
         button:active {
             background-color: #004080;
         }
+
         .desktop-advice {
             font-size: 16px;
             color: #555;
@@ -70,12 +92,35 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
+        <!-- Top Logo -->
         <img src="logo.jpg" alt="Cloudy Logo" class="logo">
-        <p><span class="highlight">Cloudy</span> Web service allows you to send messages seamlessly across Web and Android. Every interaction will <span class="highlight">affect</span> both platforms. Enjoy messaging without boundaries!</p>
+        
+        <!-- Continuously playing video -->
+        <video autoplay loop muted>
+            <source src="dots_animation.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+
+        <!-- Scrollable text content -->
+        <div class="scrollable-text">
+            <p>
+                Welcome to Cloudy, where messaging across Web and Android platforms is made easy. With Cloudy, every message sent from your device will be instantly synchronized, ensuring seamless communication no matter the platform. 
+                <br><br> Cloudy offers many features that allow you to stay connected, including real-time messaging, multimedia sharing, video calls, and more. Whether you're chatting with friends or collaborating with colleagues, Cloudy keeps you engaged and organized.
+                <br><br> Our system is designed with security in mind, ensuring your data is protected while giving you the freedom to enjoy rich communication experiences across devices.
+                <br><br> In addition to messaging, Cloudy is expanding to offer enhanced media sharing capabilities, so you can upload, store, and access your favorite media wherever you are. Watch videos, share stories, and interact with your network in a single, cohesive platform.
+                <br><br> For an optimal experience, we recommend using Cloudy on a desktop or laptop, giving you the full range of features and a more user-friendly interface. Thanks for choosing Cloudy!
+                <br><br> Get ready to explore new dimensions of communication with Cloudy – connecting you across all your devices with no limitations.
+            </p>
+        </div>
+
+        <!-- Button to start messaging -->
         <button id="start-messaging">Start Messaging</button>
-        <p class="desktop-advice">For the best experience, we recommend using Cloudy on a desktop or laptop. This will ensure you have access to all features and a more comfortable interface.</p>
+        
+        <!-- Desktop advice -->
+        <p class="desktop-advice">For the best experience, we recommend using Cloudy on a desktop or laptop.</p>
     </div>
 
     <!-- Firebase JavaScript SDK -->
@@ -83,7 +128,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <script>
-        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBcTEVvxXmv5N8dJav4xNDRy5hXZRjVeM4",
             authDomain: "chatflow-59776.firebaseapp.com",
@@ -95,23 +139,19 @@
             measurementId: "G-V2180PR5CR"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // Handle button click
         document.getElementById('start-messaging').addEventListener('click', function() {
-            // Check if the user is authenticated
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    // User is signed in, redirect to chatlist.html
                     window.location.href = 'chatlist.html';
                 } else {
-                    // No user is signed in, redirect to signin.html
                     window.location.href = 'signin.html';
                 }
             });
         });
     </script>
 </body>
+
 </html>
