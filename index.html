@@ -14,9 +14,27 @@
             margin: 0;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
             height: 100vh;
-            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .fixed-image {
+            flex-shrink: 0;
+            max-width: 400px;
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            margin-right: 20px;
         }
 
         .container {
@@ -27,10 +45,11 @@
             text-align: center;
             max-width: 450px;
             width: 100%;
-            margin-top: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-y: auto;
+            height: 70vh; /* Make the container height flexible */
         }
 
         .logo {
@@ -49,9 +68,11 @@
         }
 
         .scrollable-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            overflow-y: auto;
+            padding: 10px;
+            max-height: 300px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .scrollable-content p {
@@ -91,66 +112,62 @@
             margin-top: 20px;
         }
 
-        /* Ensure the entire body is scrollable */
-        html,
-        body {
-            height: 100%;
-            overflow-y: auto;
-        }
+        @media (max-width: 768px) {
+            .wrapper {
+                flex-direction: column;
+            }
 
-        /* Fixed image to the right of the container */
-        .fixed-image {
-            position: fixed;
-            top: 50%;
-            right: 10%;
-            transform: translateY(-50%);
-            max-width: 400px;
-            width: 100%;
-            height: auto;
-            object-fit: cover;
+            .fixed-image {
+                margin-right: 0;
+                margin-bottom: 20px;
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <!-- Circle-shaped Logo -->
-        <img src="logo.jpg" alt="Cloudy Logo" class="logo">
-        
-        <!-- Continuously playing video -->
-        <video autoplay loop muted>
-            <source src="dots_animation.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
+    <div class="wrapper">
+        <!-- Image on the left -->
+        <img src="main.jpg" alt="Main Image" class="fixed-image">
 
-        <!-- Scrollable content with lots of text -->
-        <div class="scrollable-content">
-            <p>
-                Welcome to Cloudy! This service allows you to send messages seamlessly across Web and Android platforms. Every interaction will be synchronized, ensuring a smooth communication experience across devices.
-                <br><br>
-                Cloudy offers real-time messaging, multimedia sharing, and much more. Whether you're chatting with friends or collaborating with colleagues, our system is designed to keep you connected at all times.
-                <br><br>
-                Stay secure with Cloudy’s data protection features while enjoying a rich messaging experience. We prioritize your privacy, ensuring that your data remains safe while you connect with your network.
-                <br><br>
-                Cloudy is designed with ease of use in mind, ensuring you have access to all the features needed for effective communication. From media sharing to collaboration, Cloudy has you covered.
-                <br><br>
-                We’re continuously expanding our platform to provide better functionality and user experience. You can expect new updates that bring more interactivity and customization to the way you communicate with others.
-                <br><br>
-                Don't forget to explore Cloudy's media-sharing features. Upload and share your favorite moments with friends and family, whether it's videos, images, or more. Our platform supports a wide range of multimedia formats to enhance your communication experience.
-                <br><br>
-                Ready to get started? Dive into Cloudy and explore a whole new world of messaging without boundaries. We’re excited to have you on board!
-            </p>
+        <!-- Content container -->
+        <div class="container">
+            <!-- Circle-shaped Logo -->
+            <img src="logo.jpg" alt="Cloudy Logo" class="logo">
+            
+            <!-- Continuously playing video -->
+            <video autoplay loop muted>
+                <source src="dots_animation.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+
+            <!-- Scrollable content with lots of text -->
+            <div class="scrollable-content">
+                <p>
+                    Welcome to Cloudy! This service allows you to send messages seamlessly across Web and Android platforms. Every interaction will be synchronized, ensuring a smooth communication experience across devices.
+                    <br><br>
+                    Cloudy offers real-time messaging, multimedia sharing, and much more. Whether you're chatting with friends or collaborating with colleagues, our system is designed to keep you connected at all times.
+                    <br><br>
+                    Stay secure with Cloudy’s data protection features while enjoying a rich messaging experience. We prioritize your privacy, ensuring that your data remains safe while you connect with your network.
+                    <br><br>
+                    Cloudy is designed with ease of use in mind, ensuring you have access to all the features needed for effective communication. From media sharing to collaboration, Cloudy has you covered.
+                    <br><br>
+                    We’re continuously expanding our platform to provide better functionality and user experience. You can expect new updates that bring more interactivity and customization to the way you communicate with others.
+                    <br><br>
+                    Don't forget to explore Cloudy's media-sharing features. Upload and share your favorite moments with friends and family, whether it's videos, images, or more. Our platform supports a wide range of multimedia formats to enhance your communication experience.
+                    <br><br>
+                    Ready to get started? Dive into Cloudy and explore a whole new world of messaging without boundaries. We’re excited to have you on board!
+                </p>
+            </div>
+
+            <!-- Button to start messaging -->
+            <button id="start-messaging">Start Messaging</button>
+
+            <!-- Desktop advice -->
+            <p class="desktop-advice">For the best experience, we recommend using Cloudy on a desktop or laptop.</p>
         </div>
-
-        <!-- Button to start messaging -->
-        <button id="start-messaging">Start Messaging</button>
-
-        <!-- Desktop advice -->
-        <p class="desktop-advice">For the best experience, we recommend using Cloudy on a desktop or laptop.</p>
     </div>
-
-    <!-- Non-scrollable fixed image -->
-    <img src="main.jpg" alt="Main Image" class="fixed-image">
 
     <!-- Firebase JavaScript SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
