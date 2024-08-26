@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudy Messaging App</title>
+    <link rel="icon" href="logo_modified.ico" type="image/x-icon">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            background: linear-gradient(to right, #007bff, #00d2ff);
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 25px;
+            transition: transform 0.5s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.1);
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            background-color: #000;
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 600;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.7;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .highlight {
+            color: #007bff;
+            font-weight: 600;
+        }
+
+        /* Button Styles */
+        button {
+            background-color: #007bff;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-top: 20px;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+
+        button:active {
+            background-color: #004080;
+            transform: translateY(0);
+        }
+
+        /* Floating Animations */
+        .floating-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Circle-shaped Logo with Hover Animation -->
+        <img src="logo.jpg" alt="Cloudy Messaging Logo" class="logo floating-animation">
+
+        <!-- Continuously playing animation video -->
+        <video autoplay loop muted>
+            <source src="dots_animation.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+
+        <!-- Headline and Content -->
+        <h1>Welcome to <span class="highlight">Cloudy Messaging App</span></h1>
+
+        <p>
+            Cloudy Messaging App offers an innovative way to stay connected across all your devices. Our cross-platform solution ensures you never miss a beat, whether you're messaging on Android or through the web.
+        </p>
+        <p>
+            Designed for <span class="highlight">efficiency</span> and <span class="highlight">speed</span>, Cloudy enables real-time communication with a rich set of features. Send text, images, videos, and more with ease. Experience seamless media sharing, coupled with advanced security protocols to protect your conversations.
+        </p>
+        <p>
+            Our platform ensures that all your data is safely encrypted, keeping your messages private and secure. At Cloudy, we believe in <span class="highlight">privacy-first</span> design that gives you peace of mind.
+        </p>
+        <p>
+            Whether you’re collaborating with colleagues, chatting with friends, or sharing moments with loved ones, Cloudy Messaging App is built for <span class="highlight">flexibility</span> and <span class="highlight">reliability</span>.
+        </p>
+        <p>
+            Stay tuned as we continue to enhance the Cloudy experience with new features and updates. We are dedicated to making communication better, faster, and more enjoyable for everyone.
+        </p>
+
+        <!-- Call to Action Button -->
+        <button id="start-messaging">Start Messaging</button>
+    </div>
+</body>
+
+</html>
