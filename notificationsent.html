@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Monitoring</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+    <h1>Monitoring Messages</h1>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcTEVvxXmv5N8dJav4xNDRy5hXZRjVeM4",
+            authDomain: "chatflow-59776.firebaseapp.com",
+            databaseURL: "https://chatflow-59776-default-rtdb.firebaseio.com",
+            projectId: "chatflow-59776",
+            storageBucket: "chatflow-59776.appspot.com",
+            messagingSenderId: "549003131640",
+            appId: "1:549003131640:web:3f4a7b8cef4c0d8a2b990d",
+            measurementId: "G-V2180PR5CR"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Function to fetch FCM token from the users node
+        function fetchFcmToken(email) {
+            return database.ref('users').orderByChild('email').equalTo(email).once('value')
+                .then(snapshot => {
+                    const userData = snapshot.val();
+                    if (userData) {
+                        const user = Object.values(userData)[0];
+                        return user.fcmToken;
+                    }
+                    return null;
+                });
+        }
+
+        // Function to send notification using FCM
+        function sendNotification(fcmToken, message) {
+            fetch('https://fcm.googleapis.com/fcm/send', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'key=AAAAf9Mi-vg:APA91bG78wl9hvVgAbAxpCp-9bVv6IynCwjukaoZa4CNeWxfvcGRmtDS6U1t8oOXMt8MWcgSwMT0o8gXPd8F3snCO0FSYVZAR9WezPVWOaqdteNt3ikj9ug3qOrfPtZPfsyDZpOEOwUd', // Replace with your FCM server key
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    to: fcmToken,
+                    notification: {
+                        title: 'New Message',
+                        body: message
+                    }
+                })
+            }).then(response => response.json())
+              .then(data => console.log('Notification sent:', data))
+              .catch(error => console.error('Error sending notification:', error));
+        }
+
+        // Listen for new messages in the messages node
+        database.ref('messages').on('child_added', snapshot => {
+            const messageData = snapshot.val();
+            const { senderEmail, receiverEmail, text } = messageData;
+
+            // Fetch FCM token for the receiverEmail
+            fetchFcmToken(receiverEmail).then(fcmToken => {
+                if (fcmToken) {
+                    // Send the text as a notification to the receiverEmail
+                    sendNotification(fcmToken, text);
+                } else {
+                    console.error(`FCM token not found for ${receiverEmail}`);
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
