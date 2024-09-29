@@ -3,9 +3,9 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import firebase_admin
 from firebase_admin import credentials, db
-
-# Initialize Firebase Admin SDK
-cred = credentials.Certificate("serviceAccountKey.json")  # Replace with your service account path
+import os
+firebase_service_account_key = os.getenv('FIREBASE_SERVICE_ACCOUNT_KEY')
+cred = credentials.Certificate(firebase_service_account_key)  # Replace with your service account path
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://chatflow-59776-default-rtdb.firebaseio.com'
 })
